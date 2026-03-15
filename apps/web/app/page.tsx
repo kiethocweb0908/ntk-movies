@@ -10,7 +10,7 @@ export default async function Page() {
   })
 
   return (
-    <div className="flex min-h-1000 bg-gray-800">
+    <div className="min-h-1000 bg-black">
       {/* <MovieHeroCarousel movies={res} /> */}
       <HeroCarsousel movies={res} />
       <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">

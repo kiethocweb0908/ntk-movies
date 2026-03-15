@@ -52,13 +52,13 @@ interface HeroContentProps {
 const HeroContent = memo(
   ({ currentMovie, activeIndex, setPaused }: HeroContentProps) => {
     return (
-      <div className="relative z-30 flex h-full max-w-4xl -translate-y-1/10 flex-col justify-end px-4 sm:-translate-y-1/7 md:-translate-y-1/10 md:px-24">
+      <div className="relative z-30 flex h-full max-w-4xl -translate-y-1/10 flex-col justify-end px-4 sm:-translate-y-1/7 sm:px-10 md:-translate-y-1/10 md:px-15 xl:px-24">
         <motion.h1
           key={`title-${activeIndex}`}
           variants={titleVariant}
           initial="visible"
           animate="visible"
-          className="mb-2 line-clamp-3 text-4xl font-black tracking-tighter sm:text-5xl md:text-8xl lg:mb-4"
+          className="mb-2 line-clamp-3 text-4xl font-black tracking-tighter sm:text-5xl lg:mb-4 lg:text-8xl"
         >
           {currentMovie.name}
         </motion.h1>

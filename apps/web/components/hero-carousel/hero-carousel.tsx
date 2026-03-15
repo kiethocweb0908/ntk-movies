@@ -102,7 +102,7 @@ const HeroCarsousel = ({ movies }: { movies: MovieResponse[] }) => {
 
   return (
     <div
-      className="relative flex h-screen w-full flex-col overflow-hidden bg-black font-sans text-white select-none lg:flex-row"
+      className="relative flex h-[110vh] w-full flex-col overflow-hidden bg-black font-sans text-white select-none lg:flex-row"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -117,22 +117,24 @@ const HeroCarsousel = ({ movies }: { movies: MovieResponse[] }) => {
       {/* Background Images */}
       <HeroBackground movies={movies} activeIndex={activeIndex} />
 
-      {/* Content Section */}
-      <HeroContent
-        currentMovie={currentMovie}
-        activeIndex={activeIndex}
-        setPaused={setPaused}
-      />
+      <div className="relative flex h-screen w-full flex-col lg:flex-row">
+        {/* Content Section */}
+        <HeroContent
+          currentMovie={currentMovie}
+          activeIndex={activeIndex}
+          setPaused={setPaused}
+        />
 
-      {/* Thumbnail Section - Compact Overlapping Aligned */}
-      <HeroThumbnails
-        movies={movies}
-        activeIndex={activeIndex}
-        setActiveIndex={setActiveIndex}
-        setProgress={setProgress}
-        nextSlide={nextSlide}
-        prevSlide={prevSlide}
-      />
+        {/* Thumbnail Section - Compact Overlapping Aligned */}
+        <HeroThumbnails
+          movies={movies}
+          activeIndex={activeIndex}
+          setActiveIndex={setActiveIndex}
+          setProgress={setProgress}
+          nextSlide={nextSlide}
+          prevSlide={prevSlide}
+        />
+      </div>
     </div>
   )
 }
