@@ -1,0 +1,299 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model OTP {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type        OtpType
+  email       String
+  otp         String
+  pendingData Json?
+  attempts    Int      @default(0)
+
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([email])
+}
+
+model Role {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      RoleType @unique
+  slug      String   @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+}
+
+model User {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String     @unique
+  userName     String?    @unique
+  hashPassword String?
+  firstName    String?
+  lastName     String?
+  googleId     String?    @unique
+  avatarUrl    String?
+  avatarId     String?
+  roleId       String     @db.Uuid
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  comments     Comment[]
+  favorites    Favorite[]
+  history      History[]
+  likes        Like[]
+  sessions     Session[]
+  role         Role       @relation(fields: [roleId], references: [id])
+
+  @@index([email])
+  @@index([userName])
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @db.Uuid
+  refreshToken String   @unique
+  expiresAt    DateTime
+
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  externalId     String?         @unique
+  name      String          @unique
+  slug      String          @unique
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  movies    MovieCategory[]
+}
+
+model Country {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  externalId     String?         @unique
+  name      String         @unique
+  slug      String         @unique
+
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  movies    MovieCountry[]
+}
+
+model Actor {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tmdb_people_id         Int?         @unique
+  gender    Int          @default(2)
+  name      String
+  originalName String?
+  profile_path String?
+  also_known_as String[] @default([])
+  
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  movies    MovieActor[]
+}
+
+model Movie {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  externalId     String?         @unique
+  name           String
+  slug           String          @unique
+  originName     String?
+  alternativeNames String[]      @default([])
+  type           String       @default("single")
+  thumbUrl       String?
+  posterUrl      String?
+  sub_docquyen   Boolean         @default(false)
+  chieurap       Boolean         @default(false)
+  time           String?
+  episodeCurrent String?         @default("Trailer")
+  quality        String?         @default("HD")
+  lang           String?   @default("Vietsub")
+  lang_key       String[]        @default(["vs"])
+  year           Int?
+  lastEpisodes   Json?
+
+  content        String?         @db.Text
+  status         String     @default("Trailer")
+  is_copyrigh    Boolean         @default(false)
+  trailerUrl     String?
+  episodeTotal   String?         @default("1")
+  viewCount      Int             @default(0)
+  notify           String?         @default("")
+  showtimes        String?         @default("")
+
+  seriesSlug     String?
+  published      Boolean         @default(true)
+
+  tmdbId         String?         
+  tmdbType       String?         
+  tmdbSeason     Int?
+  tmdb_vote_average Int          @default(0)
+  tmdb_vote_count Int            @default(0)
+
+  imdbId         String?          
+  imdb_vote_average Int          @default(0)
+  imdb_vote_count Int            @default(0)
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  servers        Server[]
+  // episodes       Episode[]
+  comments       Comment[]
+  favorites      Favorite[]
+  history        History[]
+  actors         MovieActor[]
+  categories     MovieCategory[]
+  countries      MovieCountry[]
+  galleries      MovieGallery[]
+
+  @@index([externalId])
+  @@index([year])
+  @@index([published, type])
+  @@index([published, createdAt])
+  @@index([type, year])
+}
+
+model MovieCountry {
+  countryId String  @db.Uuid
+  movieId   String  @db.Uuid
+  country   Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  movie     Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@id([countryId, movieId])
+}
+
+model MovieCategory {
+  categoryId String   @db.Uuid
+  movieId    String   @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  movie      Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@id([categoryId, movieId])
+}
+
+model MovieGallery {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url       String
+  movieId   String   @db.Uuid
+  createdAt DateTime @default(now())
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+}
+
+model MovieActor {
+  movieId String @db.Uuid
+  actorId String @db.Uuid
+  character String?
+  role      String @default("Acting")
+  actor   Actor  @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, actorId])
+}
+
+model Server {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  movieId    String   @db.Uuid
+  name       String
+  isAi       Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+
+  movie      Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  episodes   Episode[]
+
+  @@index([movieId])
+}
+
+model Episode {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  serverId      String       @db.Uuid
+
+  name       String
+  slug       String
+  fileName   String?
+  linkEmbed  String?
+  linkM3u8   String?
+
+  published  Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, slug])
+  @@index([serverId, slug])
+}
+
+model Favorite {
+  userId  String @db.Uuid
+  movieId String @db.Uuid
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, movieId])
+}
+
+model History {
+  userId    String   @db.Uuid
+  movieId   String   @db.Uuid
+  time      String?
+  updatedAt DateTime @updatedAt
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, movieId])
+}
+
+model Comment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  movieId   String   @db.Uuid
+  content   String
+  reply     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes     Like[]
+
+  @@index([movieId])
+}
+
+model Like {
+  userId    String   @db.Uuid
+  commentId String   @db.Uuid
+  type      LikeType @default(LIKE)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+}
+
+enum OtpType {
+  REGISTER
+  FORGOT_PASSWORD
+}
+
+enum RoleType {
+  ADMIN
+  USER
+}
+
+enum LikeType {
+  LIKE
+  DISLIKE
+}
+

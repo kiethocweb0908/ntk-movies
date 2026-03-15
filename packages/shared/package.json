@@ -1,0 +1,21 @@
+{
+  "name": "@workspace/shared",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    "./*": "./src/*.ts",
+    "./category": "./src/schema/category/index.ts",
+    "./country": "./src/schema/country/index.ts"
+  }
+}
