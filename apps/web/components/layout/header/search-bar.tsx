@@ -17,7 +17,7 @@ export function SearchBar() {
   return (
     <form
       onSubmit={handleSearch}
-      className="relative hidden w-full max-w-xs lg:block"
+      className="relative hidden w-full max-w-62 lg:block xl:max-w-xs"
     >
       <Search
         strokeWidth={1.5}

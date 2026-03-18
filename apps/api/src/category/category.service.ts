@@ -18,4 +18,24 @@ export class CategoryService {
       },
     });
   }
+
+  async getHome() {
+    return this.prisma.category.findMany({
+      where: {
+        OR: [
+          { slug: 'tinh-cam' },
+          { slug: 'bi-an' },
+          { slug: 'hai-huoc' },
+          { slug: 'hanh-dong' },
+          { slug: 'phieu-luu' },
+          { slug: 'kinh-di' },
+          { slug: 'co-trang' },
+          { slug: 'gia-dinh' },
+        ],
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  }
 }

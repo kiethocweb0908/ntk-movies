@@ -52,7 +52,7 @@ interface HeroContentProps {
 const HeroContent = memo(
   ({ currentMovie, activeIndex, setPaused }: HeroContentProps) => {
     return (
-      <div className="relative z-30 flex h-full max-w-4xl -translate-y-1/10 flex-col justify-end px-4 sm:-translate-y-1/7 sm:px-10 md:-translate-y-1/10 md:px-15 xl:px-24">
+      <div className="relative z-30 flex h-full max-w-4xl -translate-y-1/10 flex-col justify-end px-4 sm:-translate-y-1/7 sm:px-10 md:-translate-y-1/10 md:px-15 xl:px-13">
         <motion.h1
           key={`title-${activeIndex}`}
           variants={titleVariant}
@@ -72,10 +72,10 @@ const HeroContent = memo(
         >
           <div className="flex items-center gap-1 rounded bg-yellow-500 px-2 py-0.5 text-black">
             <Star size={14} fill="currentColor" />
-            <span>{currentMovie.imdb_vote_average.toString()}</span>
+            <span>{currentMovie.imdb_vote_average!.toString()}</span>
           </div>
           <span className="rounded border border-white/30 px-1 py-0.5 text-blue-400 md:px-2">
-            TMDB {currentMovie.tmdb_vote_average.toString()}
+            TMDB {currentMovie.tmdb_vote_average!.toString()}
           </span>
           <span className="text-white/60">•</span>
           {currentMovie.categories.map((cate, index) => (
@@ -92,7 +92,7 @@ const HeroContent = memo(
           animate="visible"
           className="mb-5 line-clamp-2 max-w-xl text-sm text-gray-300 md:mb-10 md:text-lg lg:line-clamp-5"
         >
-          {formatContent(currentMovie.content)}
+          {formatContent(currentMovie.content!)}
         </motion.p>
 
         <motion.div

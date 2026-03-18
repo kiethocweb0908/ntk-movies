@@ -1,29 +1,30 @@
+import CategoryList from "@/components/category/category-list"
 import HeroCarsousel from "@/components/hero-carousel/hero-carousel"
-import MovieHeroCarousel from "@/components/HeroSlider"
+import MovieRow from "@/components/movie/movie-row"
 import { api } from "@/lib/api"
-import { MovieResponse } from "@workspace/shared/schema/movie/movie.response"
+import { MovieHome } from "@workspace/shared/schema/movie/movie.response"
 import { Button } from "@workspace/ui/components/button"
 
 export default async function Page() {
-  const res = await api<MovieResponse[]>("/movies/top-views", {
+  const res = await api<MovieHome>("/movies/home", {
     next: { revalidate: 3600 },
   })
 
+  const { categories, chienese, chieurap, hero, horror, korean, usuk } =
+    res.data
+
   return (
-    <div className="min-h-1000 bg-black">
+    <div className="min-h-1000 bg-background">
       {/* <MovieHeroCarousel movies={res} /> */}
-      <HeroCarsousel movies={res} />
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        {/* <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div> */}
+      <HeroCarsousel movies={hero} />
+      <div className="space-y-5 px-5">
+        <CategoryList categories={categories} />
+        <MovieRow tittle="Phim Hàn Quốc mới" movies={korean} />
+        <MovieRow tittle="Phim Trung Quốc mới" movies={chienese} />
+        <MovieRow tittle="Phim US-UK mới" movies={usuk} />
+        <MovieRow tittle="Phim Chiếu Rạp" movies={chieurap} />
       </div>
+      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose"></div>
     </div>
   )
 }

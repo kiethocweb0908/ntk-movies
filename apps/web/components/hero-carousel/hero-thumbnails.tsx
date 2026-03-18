@@ -34,7 +34,7 @@ const HeroThumbnails = memo(
     }
 
     return (
-      <div className="bottom-10 z-40 w-full md:mx-auto lg:absolute lg:hidden lg:max-w-142.5 xl:right-24 xl:block">
+      <div className="bottom-10 z-40 w-full md:mx-auto lg:absolute lg:hidden lg:max-w-142.5 xl:right-13 xl:block">
         {/* Navigation Header */}
         <div className="flex items-center justify-between px-2 lg:mb-4">
           <div className="relative mr-4 h-0.5 grow overflow-hidden bg-white/20">

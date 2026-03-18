@@ -29,8 +29,8 @@ const HeroBackground = memo(({ movies, activeIndex }: HeroBackgroundProps) => {
                 : "z-0 scale-105 opacity-0"
             }`}
           >
-            <div className="absolute inset-0 z-20 bg-linear-to-r from-black via-black/40 to-transparent" />
-            <div className="absolute inset-0 z-20 bg-linear-to-t from-black via-transparent to-transparent" />
+            <div className="absolute inset-0 z-20 bg-linear-to-r from-background via-background/40 to-transparent" />
+            <div className="absolute inset-0 z-20 bg-linear-to-t from-background via-transparent to-transparent" />
             <img
               src={IMG_URL + movie.posterUrl}
               alt={movie.name}
