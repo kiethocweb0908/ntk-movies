@@ -102,7 +102,7 @@ const HeroCarsousel = ({ movies }: { movies: MovieResponse[] }) => {
 
   return (
     <div
-      className="relative flex h-[110vh] w-full flex-col overflow-hidden bg-black font-sans text-white select-none lg:flex-row"
+      className="relative flex h-[110vh] w-full flex-col overflow-hidden bg-background font-sans text-white select-none lg:flex-row"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

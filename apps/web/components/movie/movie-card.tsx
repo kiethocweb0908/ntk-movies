@@ -29,9 +29,11 @@ export const MovieCard = ({ movie, variant = "vertical" }: MovieCardProps) => {
         />
         <div className="absolute right-0 bottom-0 left-0 flex text-xs text-primary">
           <span className="rounded-r-md bg-slate-600 p-2">{status}</span>
-          <span className="rounded-md bg-slate-600 p-2 font-normal">
-            {movie.lang}
-          </span>
+          {movie.status !== "trailer" && (
+            <span className="rounded-md bg-slate-600 p-2 font-normal">
+              {movie.lang}
+            </span>
+          )}
         </div>
       </div>
       <Link

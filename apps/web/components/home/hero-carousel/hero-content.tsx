@@ -56,7 +56,7 @@ const HeroContent = memo(
         <motion.h1
           key={`title-${activeIndex}`}
           variants={titleVariant}
-          initial="visible"
+          initial="hidden"
           animate="visible"
           className="mb-2 line-clamp-3 text-4xl font-black tracking-tighter sm:text-5xl lg:mb-4 lg:text-8xl"
         >

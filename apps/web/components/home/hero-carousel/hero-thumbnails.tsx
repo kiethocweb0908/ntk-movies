@@ -24,7 +24,7 @@ const HeroThumbnails = memo(
     prevSlide,
   }: HeroThumbnailsProps) => {
     const getVisibleThumbnails = () => {
-      console.log("getVisibleThumbnails")
+      // console.log("getVisibleThumbnails")
       const visible = []
       for (let i = -2; i <= 2; i++) {
         let index = (activeIndex + i + movies.length) % movies.length
