@@ -2,8 +2,10 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CategoryService } from '../category/category.service';
 import {
+  AppResponse,
+  MovieDetailResponse,
   MovieMood,
-  type MovieHome,
+  type MovieHomeData,
 } from '@workspace/shared/schema/movie/movie.response';
 import { MovieMoodParamsDto } from './dto/movie-query.dto';
 import { prisma } from '@/prisma/client';
@@ -16,7 +18,7 @@ export class MoviesController {
   ) {}
 
   @Get('home')
-  async getHomeData(): Promise<MovieHome> {
+  async getHomeData(): Promise<AppResponse<MovieHomeData>> {
     const [
       hero,
       korean,
@@ -75,6 +77,19 @@ export class MoviesController {
       message: 'Thành công!',
       status: true,
       data: movies,
+    };
+  }
+
+  @Get('detail/:slug')
+  async getDetail(
+    @Param('slug') slug: string,
+  ): Promise<AppResponse<MovieDetailResponse>> {
+    const data = await this.moviesService.getMovieDetail(slug);
+
+    return {
+      message: 'Thành công!',
+      status: true,
+      data,
     };
   }
 }

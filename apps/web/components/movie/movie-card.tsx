@@ -1,5 +1,5 @@
 import { MovieResponse } from "@workspace/shared/schema/movie/movie.response"
-import { IMG_URL } from "@workspace/ui/lib/config"
+import { IMG_URL, Movie_URL } from "@workspace/ui/lib/config"
 import { formatStatus } from "@workspace/ui/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
@@ -46,7 +46,7 @@ export const MovieCard = ({
       </div>
       {showTittle && (
         <Link
-          href={`thong-tin-phim/${movie.slug}`}
+          href={`${Movie_URL}/${movie.slug}`}
           className="group relative block w-full cursor-pointer pt-4"
         >
           <h3 className="line-clamp-1 text-center text-sm font-semibold text-primary group-hover:text-textHover">

@@ -5,11 +5,13 @@ import MoodSection from "@/components/home/mood-section/mood-section"
 import TopTist from "@/components/home/top-list/top-list"
 import MovieRow from "@/components/movie/movie-row"
 import { api } from "@/lib/api"
-import { MovieHome } from "@workspace/shared/schema/movie/movie.response"
-import { Button } from "@workspace/ui/components/button"
+import {
+  AppResponse,
+  MovieHomeData,
+} from "@workspace/shared/schema/movie/movie.response"
 
 export default async function Page() {
-  const res = await api<MovieHome>("/movies/home", {
+  const res = await api<AppResponse<MovieHomeData>>("/movies/home", {
     // next: { revalidate: 3600 },
   })
 

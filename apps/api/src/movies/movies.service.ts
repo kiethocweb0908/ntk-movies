@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MovieQueryDto } from './dto/movie-query.dto';
 import { Prisma } from '@prisma/client';
-import { MovieResponse } from '@workspace/shared/schema/movie/movie.response';
+import {
+  MovieDetailResponse,
+  MovieResponse,
+} from '@workspace/shared/schema/movie/movie.response';
 
 @Injectable()
 export class MoviesService {
@@ -36,18 +39,14 @@ export class MoviesService {
     categories: {
       select: {
         category: {
-          select: {
-            name: true,
-          },
+          select: { name: true },
         },
       },
     },
     countries: {
       select: {
         country: {
-          select: {
-            name: true,
-          },
+          select: { name: true },
         },
       },
     },
@@ -72,6 +71,88 @@ export class MoviesService {
     return moodMap[moodId] || [];
   }
 
+  // thông tin diễn viên của phim
+  private async getActorsByMovieId(movieId: string) {
+    const data = await this.prisma.movieActor.findMany({
+      where: { movieId },
+      // include: { actor: true },
+      select: {
+        character: true,
+        role: true,
+        actor: {
+          select: {
+            id: true,
+            tmdb_people_id: true,
+            gender: true,
+            name: true,
+            originalName: true,
+            profile_path: true,
+          },
+        },
+      },
+    });
+    // Map lại để bỏ lớp trung gian "movieActor"
+    return data.map((item) => ({
+      id: item.actor.id,
+      tmdb_people_id: item.actor.tmdb_people_id,
+      gender: item.actor.gender,
+      name: item.actor.name,
+      originalName: item.actor.originalName,
+      profile_path: item.actor.profile_path,
+      character: item.character,
+      role: item.role,
+    }));
+  }
+
+  // server và tập phim
+  private async getServersByMovieId(movieId: string) {
+    return this.prisma.server.findMany({
+      where: { movieId },
+      include: {
+        episodes: {
+          where: { published: true },
+          select: { name: true, slug: true, linkEmbed: true },
+          orderBy: { name: 'asc' },
+        },
+      },
+    });
+  }
+
+  // Các phim liên quan
+  private async getRelatedMovies(
+    currentId: string,
+    categoryIds: string[],
+    countryIds: string[],
+    actorIds: string[],
+  ) {
+    const movies = await this.prisma.movie.findMany({
+      where: {
+        OR: [
+          {
+            actors: {
+              some: { actorId: { in: actorIds } },
+            },
+          },
+          {
+            AND: [
+              { categories: { some: { categoryId: { in: categoryIds } } } },
+              { countries: { some: { countryId: { in: countryIds } } } },
+            ],
+          },
+        ],
+        id: { not: currentId },
+        published: true,
+      },
+      take: 12,
+      orderBy: [{ updatedAt: 'desc' }, { viewCount: 'desc' }],
+      select: this.select,
+    });
+
+    return this.formatMovie(movies);
+  }
+
+  //---------------------------------------------
+  //=============================================
   //---------------------------------------------
 
   async getHomeByQuery(
@@ -191,5 +272,59 @@ export class MoviesService {
     });
 
     return this.formatMovie(movies);
+  }
+
+  async getMovieDetail(slug: string): Promise<MovieDetailResponse> {
+    const movie = await this.prisma.movie.findUnique({
+      where: { slug },
+      include: {
+        categories: {
+          select: {
+            category: {
+              select: { id: true, name: true, slug: true },
+            },
+          },
+        },
+        countries: {
+          select: {
+            country: {
+              select: { id: true, name: true, slug: true },
+            },
+          },
+        },
+        actors: { select: { actorId: true } },
+      },
+    });
+
+    if (!movie) throw new NotFoundException('Phim không tồn tại');
+
+    const actorIds = movie.actors.map((a) => a.actorId);
+    const categoryIds = movie.categories.map((c) => c.category.id);
+    const countryIds = movie.countries.map((c) => c.country.id);
+
+    const { actors: _, ...movieWithoutActors } = movie;
+    const formatedMovie = {
+      ...movieWithoutActors,
+      categories: movieWithoutActors.categories.map((c) => c.category),
+      countries: movieWithoutActors.countries.map((c) => c.country),
+    };
+
+    const [actors, servers, related] = await Promise.all([
+      this.getActorsByMovieId(movie.id),
+      this.getServersByMovieId(movie.id),
+      this.getRelatedMovies(
+        formatedMovie.id,
+        categoryIds,
+        countryIds,
+        actorIds,
+      ),
+    ]);
+
+    return {
+      movie: formatedMovie,
+      actors,
+      servers,
+      related,
+    };
   }
 }

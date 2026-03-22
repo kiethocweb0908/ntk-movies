@@ -16,7 +16,7 @@ const TopTist = ({ movies }: TopTistProps) => {
       <TitleSection tittle="Được xem nhiều nhất" />
 
       {/* Grid chứa danh sách phim */}
-      <div className="grid grid-cols-4 gap-x-6 gap-y-10 lg:grid-cols-8">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 lg:grid-cols-8">
         {movies.map((movie, index) => (
           <Link
             href={`thong-tin-phim/${movie.slug}`}
