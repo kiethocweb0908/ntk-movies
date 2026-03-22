@@ -20,7 +20,7 @@ const FeaturedThumbnails = memo(
     setProgress,
   }: FeaturedThumbnailProps) => {
     return (
-      <div className="group absolute right-1/2 -bottom-8 z-40 grid translate-x-1/2 translate-y-1/2 grid-cols-10 gap-5 lg:w-[80vw]">
+      <div className="group absolute right-1/2 -bottom-8 z-40 grid translate-x-1/2 translate-y-1/2 grid-cols-10 gap-5 sm:gap-3 lg:w-[80vw] lg:gap-5">
         {movies.map((movie, index) => (
           <div
             key={movie.slug}
@@ -28,13 +28,13 @@ const FeaturedThumbnails = memo(
               setActiveIndex(index)
               setProgress(0)
             }}
-            className={`relative aspect-2/3 overflow-hidden rounded-xl border-2 transition-all duration-300 select-none ${activeIndex === index ? "border-primary" : "border-transparent"} hover:-translate-y-5`}
+            className={`relative aspect-square w-3 rounded-full transition-all duration-300 select-none md:w-4 lg:aspect-2/3 lg:w-auto lg:overflow-hidden lg:rounded-xl lg:border-2 ${activeIndex === index ? "border-primary bg-primary" : "border-transparent bg-slate-400 lg:bg-transparent"} lg:hover:-translate-y-5`}
           >
             <Image
               src={IMG_URL + movie.thumbUrl}
               alt={movie.name}
               fill
-              className="object-cover transition-all duration-300 hover:scale-110"
+              className="hidden object-cover transition-all duration-300 hover:scale-110 lg:block"
             />
           </div>
         ))}

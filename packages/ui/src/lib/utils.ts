@@ -8,3 +8,11 @@ export function cn(...inputs: ClassValue[]) {
 export function formatContent(content: string) {
   return content.replace(/<[^>]*>/g, "")
 }
+
+export function formatStatus(status: string) {
+  return status === "completed"
+    ? "hoàn thành"
+    : status === "ongoing"
+      ? "Đang diễn ra"
+      : "trailer"
+}

@@ -1,5 +1,6 @@
 import { CategoryResponse } from "@workspace/shared/schema/category/category.response"
 import CategoryCard from "./category-card"
+import TittleSection from "../ui/tittle-section"
 
 const GRADIENTS = [
   "from-blue-400 to-purple-600", // Âm nhạc
@@ -18,10 +19,9 @@ interface CategoryListProps {
 const CategoryList = ({ categories }: CategoryListProps) => {
   if (!categories) return null
   return (
-    <div className="relative -top-15 z-10">
-      <h3 className="mb-5 text-2xl leading-tight font-semibold text-primary md:text-3xl lg:text-2xl xl:text-3xl">
-        Bạn quan tâm gì?
-      </h3>
+    <div className="">
+      <TittleSection tittle="Bạn quan tâm gì?" />
+
       <div className="grid grid-cols-4 gap-4 text-primary lg:grid-cols-8 lg:gap-5">
         {categories.map((category, index) => {
           const gradient = GRADIENTS[index % GRADIENTS.length]

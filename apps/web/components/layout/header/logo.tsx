@@ -17,7 +17,7 @@ export function Logo() {
         alt="NTK Films Logo"
         width={135}
         height={135}
-        className="rounded-lg object-cover"
+        className="h-auto rounded-lg object-cover"
         priority
       />
     </Link>

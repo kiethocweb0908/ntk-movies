@@ -15,4 +15,13 @@ export const MovieQuerySchema = z.object({
   year: z.coerce.number().optional(),
 })
 
+export const MovieMoodSchema = z.object({
+  moodId: z.enum(
+    ["combat", "cau-luong", "thao-tung", "chua-lanh", "sinh-ton"],
+    {
+      errorMap: () => ({ message: "Mood này không tồn tại!" }),
+    }
+  ),
+})
+
 export type MovieQuery = z.infer<typeof MovieQuerySchema>

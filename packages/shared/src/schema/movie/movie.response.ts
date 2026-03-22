@@ -40,7 +40,15 @@ export interface MovieHome {
     chienese: MovieResponse[]
     usuk: MovieResponse[]
     horror: MovieResponse[]
+    topViewHorror: MovieResponse[]
     chieurap: MovieResponse[]
+    topViewChieurap: MovieResponse[]
     categories: BaseType[]
   }
+}
+
+export interface MovieMood {
+  message: string
+  status: boolean
+  data: MovieResponse[]
 }

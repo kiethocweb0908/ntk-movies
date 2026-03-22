@@ -5,6 +5,8 @@ import FeaturedBackground from "./featured-background"
 import { MovieResponse } from "@workspace/shared/schema/movie/movie.response"
 import FeaturedContent from "./featured-content"
 import FeaturedThumbnails from "./featured-thumbnails"
+import { motion, PanInfo, useDragControls } from "framer-motion"
+import TitleSection from "@/components/ui/tittle-section"
 
 interface FeaturedSliderProps {
   movies: MovieResponse[]
@@ -15,8 +17,8 @@ const FeaturedSlider = ({ movies, tittle }: FeaturedSliderProps) => {
   const [progress, setProgress] = useState(0)
   const [paused, setPaused] = useState(false)
   const isAnimatingRef = useRef(false)
-
   const SLIDE_DURATION = 3500
+  const controls = useDragControls()
 
   const nextSlide = useCallback(() => {
     if (isAnimatingRef.current) return
@@ -56,19 +58,48 @@ const FeaturedSlider = ({ movies, tittle }: FeaturedSliderProps) => {
     return () => clearInterval(interval)
   }, [paused, nextSlide])
 
+  const onDragEnd = (
+    e: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    const x = info.offset.x
+    const width = window.innerWidth
+    const threshold = width < 768 ? 20 : width < 1024 ? 35 : 50
+    if (Math.abs(x) >= threshold) {
+      if (x > 0) prevSlide()
+      else nextSlide()
+    }
+    setPaused(false)
+  }
+
   const currentMovie = movies[activeIndex]
   if (!currentMovie) return
   return (
-    <div>
-      <h3 className="mb-5 text-2xl leading-tight font-semibold text-primary md:text-3xl lg:text-2xl xl:text-3xl">
-        {tittle}
-      </h3>
-      <div className="relative w-full select-none lg:aspect-72/23">
-        <FeaturedBackground movies={movies} activeIndex={activeIndex} />
+    <div className="mb-20 md:mb-22 lg:mb-35 xl:mb-42">
+      <TitleSection tittle={tittle} />
+
+      <motion.div
+        drag="x"
+        dragListener={false}
+        dragControls={controls}
+        dragElastic={0}
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragStart={() => setPaused(true)}
+        onDragEnd={onDragEnd}
+        style={{ cursor: "grab" }}
+        whileTap={{ cursor: "grabbing" }}
+        className="relative aspect-square w-full select-none sm:aspect-video lg:aspect-72/23"
+      >
+        <FeaturedBackground
+          movies={movies}
+          activeIndex={activeIndex}
+          dragControls={controls}
+        />
         <FeaturedContent
           currentMovie={currentMovie}
           activeIndex={activeIndex}
           setPaused={setPaused}
+          dragControls={controls}
         />
         <FeaturedThumbnails
           movies={movies}
@@ -76,7 +107,7 @@ const FeaturedSlider = ({ movies, tittle }: FeaturedSliderProps) => {
           setActiveIndex={setActiveIndex}
           setProgress={setProgress}
         />
-      </div>
+      </motion.div>
     </div>
   )
 }
