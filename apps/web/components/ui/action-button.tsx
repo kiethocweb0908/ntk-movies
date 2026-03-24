@@ -1,3 +1,4 @@
+import { Movie_URL } from "@workspace/ui/lib/config"
 import { Heart, Play } from "lucide-react"
 import Link from "next/link"
 
@@ -10,7 +11,7 @@ const ActionButton = ({ variant, path }: ActionButtonProps) => {
   if (variant === "play")
     return (
       <Link
-        href={`/thong-tin-phim/${path}`}
+        href={`${Movie_URL}/${path}`}
         className="flex cursor-pointer items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-bold text-black transition-colors hover:bg-gray-200 sm:px-6 md:px-8 md:py-3"
       >
         <Play fill="currentColor" className="size-4 md:size-5" /> Xem ngay

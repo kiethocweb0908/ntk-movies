@@ -1,6 +1,6 @@
 import TitleSection from "@/components/ui/tittle-section"
 import { MovieResponse } from "@workspace/shared/schema/movie/movie.response"
-import { IMG_URL } from "@workspace/ui/lib/config"
+import { IMG_URL, Movie_URL } from "@workspace/ui/lib/config"
 import { formatStatus } from "@workspace/ui/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
@@ -19,7 +19,7 @@ const TopTist = ({ movies }: TopTistProps) => {
       <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 lg:grid-cols-8">
         {movies.map((movie, index) => (
           <Link
-            href={`thong-tin-phim/${movie.slug}`}
+            href={`${Movie_URL}/${movie.slug}`}
             key={movie.id}
             className="group relative perspective-[1000px]"
           >
