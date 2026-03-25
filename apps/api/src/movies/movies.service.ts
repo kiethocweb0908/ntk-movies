@@ -106,7 +106,7 @@ export class MoviesService {
 
   // server và tập phim
   private async getServersByMovieId(movieId: string) {
-    return this.prisma.server.findMany({
+    const servers = await this.prisma.server.findMany({
       where: { movieId },
       include: {
         episodes: {
@@ -116,6 +116,16 @@ export class MoviesService {
         },
       },
     });
+
+    return servers.map((server) => ({
+      ...server,
+      episodes: server.episodes.sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        }),
+      ),
+    }));
   }
 
   // Các phim liên quan

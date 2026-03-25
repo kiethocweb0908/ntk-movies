@@ -9,6 +9,13 @@ import {
 } from "@workspace/ui/lib/utils"
 import InfoRow from "./info-row"
 import MovieThumbnail from "./movie-thumbnail"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@workspace/ui/components/accordion"
+import DetailCcontent from "./detail-content"
 
 interface MovieInfoSideProps {
   movie: MovieResponseFull
@@ -16,7 +23,7 @@ interface MovieInfoSideProps {
 
 const MovieInfoSide = ({ movie }: MovieInfoSideProps) => {
   return (
-    <div className="-translate-y-40">
+    <div className="xl:-translate-y-40">
       <div className="group flex w-full flex-col items-center">
         {/* Thumbnail */}
         <MovieThumbnail thumbUrl={movie.thumbUrl || ""} name={movie.name} />
@@ -50,51 +57,23 @@ const MovieInfoSide = ({ movie }: MovieInfoSideProps) => {
         </Badge>
       </div>
 
-      {/* Thông tin chi tiết */}
-      <div className="w-full space-y-1">
-        <InfoRow label="Thể loại">
-          {movie.categories.map((cate) => (
-            <Badge key={cate.id} variant="category">
-              {cate.name}
-            </Badge>
-          ))}
-        </InfoRow>
-
-        <InfoRow label="Quốc gia">
-          {movie.countries.map((c) => (
-            <Badge key={c.id} variant="category">
-              {c.name}
-            </Badge>
-          ))}
-        </InfoRow>
-
-        <InfoRow label="Chất lượng">
-          <Badge variant="category" className={getBadgeColor("quality")}>
-            {movie.quality}
-          </Badge>
-        </InfoRow>
-
-        <InfoRow label="Ngôn ngữ">
-          <Badge variant="category" className={getBadgeColor("lang")}>
-            {movie.lang}
-          </Badge>
-        </InfoRow>
-
-        <InfoRow label="Só tập">
-          <Badge variant="category" className={getBadgeColor("default")}>
-            {movie.episodeTotal}
-          </Badge>
-        </InfoRow>
+      {/* Mobile: Dùng Accordion | Desktop: Hiện thẳng luôn */}
+      <div className="w-full xl:hidden">
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="details" className="border-none">
+            <AccordionTrigger className="justify-center text-yellow-400 hover:no-underline">
+              Xem thông tin chi tiết
+            </AccordionTrigger>
+            <AccordionContent className="border-t border-slate-700 py-4">
+              <DetailCcontent movie={movie} />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
 
-      {/* Giới thiệu */}
-      <div className="mt-6 w-full border-t border-slate-700 pt-4 text-primary">
-        <span className="mb-3 block text-lg font-semibold text-yellow-400">
-          Nội dung phim
-        </span>
-        <p className="text-justify leading-relaxed opacity-90">
-          {formatContent(movie.content || "Đang cập nhật...")}
-        </p>
+      {/* Desktop: Hiện trực tiếp */}
+      <div className="hidden xl:block">
+        <DetailCcontent movie={movie} />
       </div>
     </div>
   )

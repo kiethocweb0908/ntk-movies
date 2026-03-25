@@ -31,6 +31,7 @@ export const MovieCard = ({
           src={src}
           alt={movie.name}
           fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
           className={`rounded-xl object-cover transition-transform duration-500 group-hover:scale-110`}
         />
         <div className="absolute right-0 bottom-0 left-0 flex text-xs text-primary">

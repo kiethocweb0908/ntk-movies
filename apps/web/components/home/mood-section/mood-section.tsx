@@ -58,7 +58,7 @@ function MoodSection() {
 
   return (
     <section className="min-h-100]">
-      <TitleSection tittle="Tâm trạng của bạn" />
+      <TitleSection title="Tâm trạng của bạn" />
 
       <div>
         <div className="grid grid-cols-5 gap-2 pb-4 lg:gap-5">
@@ -66,7 +66,7 @@ function MoodSection() {
             <button
               key={mood.id}
               onClick={() => setActiveMood(mood.id)}
-              className={`group aspect-auto cursor-pointer rounded-xl bg-linear-to-br p-2 transition-all duration-300 hover:-translate-y-3 sm:aspect-square lg:aspect-video ${mood.gradient}`}
+              className={`${activeMood === mood.id ? "border-primary" : "border-background"} group aspect-auto cursor-pointer rounded-xl border-3 bg-linear-to-br p-2 transition-all duration-300 hover:-translate-y-3 sm:aspect-square lg:aspect-video ${mood.gradient}`}
             >
               <h3 className="text-center text-sm leading-tight font-black text-white sm:text-lg md:line-clamp-1 md:text-2xl lg:text-lg xl:text-2xl">
                 {mood.label}

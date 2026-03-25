@@ -85,7 +85,7 @@ export interface EpisodeResponse {
   linkEmbed?: string | null
 }
 
-export interface ServerResponse {
+export interface MovieServerResponse {
   id: string
   name: string
   episodes: EpisodeResponse[]
@@ -105,6 +105,6 @@ export interface ActorResponse {
 export interface MovieDetailResponse {
   movie: MovieResponseFull
   actors: ActorResponse[]
-  servers: ServerResponse[]
+  servers: MovieServerResponse[]
   related: MovieResponse[]
 }

@@ -9,6 +9,11 @@ const nextConfig = {
         port: "",
         pathname: "/uploads/movies/**",
       },
+      {
+        protocol: "https",
+        hostname: "image.tmdb.org",
+        pathname: "/t/p/**",
+      },
     ],
   },
 }

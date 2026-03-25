@@ -12,7 +12,7 @@ import {
 
 export default async function Page() {
   const res = await api<AppResponse<MovieHomeData>>("/movies/home", {
-    // next: { revalidate: 3600 },
+    next: { revalidate: 3600 },
   })
 
   const {

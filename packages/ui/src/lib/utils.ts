@@ -39,3 +39,18 @@ export const getBadgeColor = (
       return "border-slate-600/50 bg-slate-700/30 text-slate-300"
   }
 }
+
+export const getYoutubeEmbedUrl = (url: string): string => {
+  if (!url) return ""
+
+  // Regex mạnh mẽ bao quát nhiều định dạng YouTube
+  const regExp =
+    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/
+  const match = url.match(regExp)
+  const videoId = match?.[2]
+
+  // Nếu tìm thấy ID 11 ký tự thì trả về link embed, không thì giữ nguyên url gốc
+  return videoId && videoId.length === 11
+    ? `https://www.youtube.com/embed/${videoId}`
+    : url
+}

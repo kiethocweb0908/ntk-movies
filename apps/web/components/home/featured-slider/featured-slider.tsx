@@ -76,7 +76,7 @@ const FeaturedSlider = ({ movies, tittle }: FeaturedSliderProps) => {
   if (!currentMovie) return
   return (
     <div className="mb-20 md:mb-22 lg:mb-35 xl:mb-42">
-      <TitleSection tittle={tittle} />
+      <TitleSection title={tittle} />
 
       <motion.div
         drag="x"
