@@ -61,10 +61,20 @@ export interface MovieResponseFull extends MovieResponse {
   updatedAt: string | Date
 }
 
+export interface MoviesResponse {
+  movies: MoviesResponse[] | []
+  meta: {
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }
+}
+
 export interface MovieHomeData {
   hero: MovieResponse[]
   korean: MovieResponse[]
-  chienese: MovieResponse[]
+  chinese: MovieResponse[]
   usuk: MovieResponse[]
   horror: MovieResponse[]
   topViewHorror: MovieResponse[]

@@ -24,12 +24,12 @@ export const MovieSection = ({ title, movies }: MovieSectionProps) => {
 
       <Carousel opts={{ align: "start", loop: false }} className="w-full">
         <CarouselContent className="-ml-4">
-          {movies.map((movie) => (
+          {movies.map((movie, index) => (
             <CarouselItem
               key={movie.id}
               className="basis-1/2 pl-4 select-none md:basis-1/4 lg:basis-1/6"
             >
-              <MovieCard movie={movie} />
+              <MovieCard movie={movie} index={index} />
             </CarouselItem>
           ))}
         </CarouselContent>

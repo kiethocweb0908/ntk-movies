@@ -17,8 +17,8 @@ const MovieList = ({ movies, grid = 8 }: MovieListProps) => {
   const gridClass = gridConfigs[grid]
   return (
     <div className={`grid grid-cols-2 gap-5 md:grid-cols-4 ${gridClass}`}>
-      {movies.map((movie) => (
-        <MovieCard key={movie.slug} movie={movie} />
+      {movies.map((movie, index) => (
+        <MovieCard key={movie.slug} movie={movie} index={index} />
       ))}
     </div>
   )

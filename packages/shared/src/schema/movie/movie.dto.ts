@@ -2,17 +2,16 @@ import { z } from "zod"
 
 export const MovieQuerySchema = z.object({
   page: z.coerce.number().min(1).optional().default(1),
-  limit: z.coerce.number().min(1).max(100).optional().default(10),
+  limit: z.coerce.number().min(1).max(100).optional().default(32),
 
-  category: z.string().optional(),
-  country: z.string().optional(),
-
-  mood: z.string().optional(),
-  featured: z.coerce.boolean().optional(),
-  chieurap: z.boolean().optional(),
+  categorySlug: z.string().optional(),
+  countrySlug: z.string().optional(),
+  type: z.string().optional(),
 
   search: z.string().optional(),
   year: z.coerce.number().optional(),
+
+  sort: z.enum(["createdAt", "viewCount"]).default("createdAt"),
 })
 
 export const MovieMoodSchema = z.object({

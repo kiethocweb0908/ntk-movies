@@ -10,6 +10,7 @@ interface TabEpisodesProps {
 }
 
 const TabEpisodes = ({ servers }: TabEpisodesProps) => {
+  console.log(servers)
   if (!servers || servers.length === 0) {
     return (
       <div className="flex h-32 items-center justify-center text-slate-500 italic">

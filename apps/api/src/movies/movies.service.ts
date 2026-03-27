@@ -5,7 +5,9 @@ import { Prisma } from '@prisma/client';
 import {
   MovieDetailResponse,
   MovieResponse,
+  MoviesResponse,
 } from '@workspace/shared/schema/movie/movie.response';
+import { MovieQuery } from '@workspace/shared/schema/movie/movie.dto';
 
 @Injectable()
 export class MoviesService {
@@ -69,6 +71,35 @@ export class MoviesService {
       'sinh-ton': ['hanh-dong', 'vien-tuong', 'phieu-luu', 'kinh-di'],
     };
     return moodMap[moodId] || [];
+  }
+
+  private async resolveFilterIds(params: {
+    categorySlug?: string;
+    countrySlug?: string;
+  }) {
+    const { categorySlug, countrySlug } = params;
+
+    const [cat, cou] = await Promise.all([
+      categorySlug
+        ? this.prisma.category.findUnique({
+            where: { slug: categorySlug },
+            select: { id: true },
+          })
+        : null,
+
+      countrySlug
+        ? this.prisma.country.findUnique({
+            where: { slug: countrySlug },
+            select: { id: true },
+          })
+        : null,
+    ]);
+
+    return {
+      categoryId: cat?.id,
+      countryId: cou?.id,
+      isValid: (!categorySlug || cat) && (!countrySlug || cou),
+    };
   }
 
   // thông tin diễn viên của phim
@@ -165,67 +196,131 @@ export class MoviesService {
   //=============================================
   //---------------------------------------------
 
-  async getHomeByQuery(
-    query: Partial<MovieQueryDto>,
-  ): Promise<MovieResponse[]> {
-    const {
-      page = 1,
-      limit = 10,
-      category,
-      country,
-      mood,
-      featured,
+  // Lấy phim cho trang home
+  async getHomeData() {
+    const [hanQuoc, trungQuoc, auMy, kinhDi] = await Promise.all([
+      this.prisma.country.findUnique({
+        where: { slug: 'han-quoc' },
+        select: { id: true },
+      }),
+      this.prisma.country.findUnique({
+        where: { slug: 'trung-quoc' },
+        select: { id: true },
+      }),
+      this.prisma.country.findUnique({
+        where: { slug: 'au-my' },
+        select: { id: true },
+      }),
+      this.prisma.category.findUnique({
+        where: { slug: 'kinh-di' },
+        select: { id: true },
+      }),
+    ]);
+
+    const baseWhere = { published: true };
+
+    const queries = [
+      // hero
+      this.prisma.movie.findMany({
+        where: baseWhere,
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        select: this.select,
+      }),
+
+      // korean
+      this.prisma.movie.findMany({
+        where: {
+          ...baseWhere,
+          countries: { some: { countryId: hanQuoc?.id } },
+        },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: this.select,
+      }),
+
+      // chinese
+      this.prisma.movie.findMany({
+        where: {
+          ...baseWhere,
+          countries: { some: { countryId: trungQuoc?.id } },
+        },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: this.select,
+      }),
+
+      // usuk
+      this.prisma.movie.findMany({
+        where: { ...baseWhere, countries: { some: { countryId: auMy?.id } } },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: this.select,
+      }),
+
+      // horror
+      this.prisma.movie.findMany({
+        where: {
+          ...baseWhere,
+          categories: { some: { categoryId: kinhDi?.id } },
+        },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: this.select,
+      }),
+
+      // topViewHorror
+      this.prisma.movie.findMany({
+        where: {
+          ...baseWhere,
+          categories: { some: { categoryId: kinhDi?.id } },
+        },
+        take: 8,
+        orderBy: [{ viewCount: 'desc' }, { imdb_vote_average: 'desc' }],
+        select: this.select,
+      }),
+
+      // chieurap
+      this.prisma.movie.findMany({
+        where: { ...baseWhere, chieurap: true },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: this.select,
+      }),
+
+      // topViewChieurap
+      this.prisma.movie.findMany({
+        where: { ...baseWhere, chieurap: true },
+        take: 8,
+        orderBy: [{ viewCount: 'desc' }, { imdb_vote_average: 'desc' }],
+        select: this.select,
+      }),
+    ];
+
+    const [
+      hero,
+      korean,
+      chinese,
+      usuk,
+      horror,
+      topViewHorror,
       chieurap,
-      search,
-      year,
-    } = query;
+      topViewChieurap,
+    ] = await Promise.all(queries);
 
-    const skip = (page - 1) * limit;
-
-    const where: Prisma.MovieWhereInput = {
-      published: true,
-      // Thể loại
-      categories: category
-        ? { some: { category: { slug: category } } }
-        : undefined,
-      // Quốc gia
-      countries: country ? { some: { country: { slug: country } } } : undefined,
-      // Năm
-      year: year ? year : undefined,
-      // Chiếu rạp
-      chieurap: chieurap ? chieurap : undefined,
-      // tìm
-      OR: search
-        ? [
-            { name: { contains: search, mode: 'insensitive' } },
-            { originName: { contains: search, mode: 'insensitive' } },
-            { alternativeNames: { has: search } },
-          ]
-        : undefined,
+    return {
+      hero: this.formatMovie(hero),
+      korean: this.formatMovie(korean),
+      chinese: this.formatMovie(chinese),
+      usuk: this.formatMovie(usuk),
+      horror: this.formatMovie(horror),
+      topViewHorror: this.formatMovie(topViewHorror),
+      chieurap: this.formatMovie(chieurap),
+      topViewChieurap: this.formatMovie(topViewChieurap),
     };
-
-    // if (mood === 'trending') {
-    //   where.viewCount = { gte: 1000 }; // Ví dụ: Mood trending là trên 1k views
-    // } else if (mood === 'high-rated') {
-    //   where.rating = { gte: 8 };
-    // }
-
-    let orderBy: Prisma.MovieOrderByWithRelationInput = { createdAt: 'desc' };
-    if (featured) {
-      orderBy = { viewCount: 'desc' };
-    }
-
-    const movies = await this.prisma.movie.findMany({
-      where,
-      take: limit,
-      skip: skip,
-      orderBy,
-      select: this.select,
-    });
-
-    return this.formatMovie(movies);
   }
 
+  // Lấy phim theo mood
   async getMoviesByMood(moodId: string) {
     const categories = this.getCategoryByMood(moodId);
 
@@ -284,6 +379,7 @@ export class MoviesService {
     return this.formatMovie(movies);
   }
 
+  // Lấy chi tiết phim
   async getMovieDetail(slug: string): Promise<MovieDetailResponse> {
     const movie = await this.prisma.movie.findUnique({
       where: { slug },
@@ -335,6 +431,73 @@ export class MoviesService {
       actors,
       servers,
       related,
+    };
+  }
+
+  // Lấy danh sách phim có lọc, phân trang, search
+  async getMovies(query: MovieQuery): Promise<MoviesResponse> {
+    const {
+      categorySlug,
+      countrySlug,
+      type,
+      year,
+      page = 1,
+      limit = 32,
+      sort,
+      search,
+    } = query;
+
+    const skip = (page - 1) * limit;
+
+    const { categoryId, countryId, isValid } = await this.resolveFilterIds({
+      categorySlug,
+      countrySlug,
+    });
+
+    if (!isValid) {
+      return {
+        movies: [],
+        meta: { total: 0, page, limit, totalPages: 0 },
+      };
+    }
+
+    const where: Prisma.MovieWhereInput = {
+      published: true,
+      ...(type && { type }),
+      ...(year && { year }),
+      ...(categoryId && { categories: { some: { categoryId } } }),
+      ...(countryId && { countries: { some: { countryId } } }),
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { originName: { contains: search, mode: 'insensitive' } },
+          { alternativeNames: { hasSome: [search] } },
+        ],
+      }),
+    };
+
+    const orderBy: Prisma.MovieOrderByWithRelationInput =
+      sort === 'viewCount' ? { viewCount: 'desc' } : { createdAt: 'desc' };
+
+    const [movies, totalCount] = await Promise.all([
+      this.prisma.movie.findMany({
+        where,
+        take: limit,
+        skip,
+        orderBy,
+        select: this.select,
+      }),
+      this.prisma.movie.count({ where }),
+    ]);
+
+    return {
+      movies: this.formatMovie(movies),
+      meta: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
     };
   }
 }

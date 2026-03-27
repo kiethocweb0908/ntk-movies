@@ -16,7 +16,8 @@ export async function api<T>(
 
     return res.json()
   } catch (error) {
-    console.error("Network/System Error:", error)
+    console.error("Fetch failed at:", endpoint, error)
+    console.error("Network/System Error")
     throw error
   }
 }

@@ -8,12 +8,14 @@ interface MovieCardProps {
   movie: MovieResponse
   variant?: "horizontal" | "vertical"
   showTittle?: boolean
+  index: number
 }
 
 export const MovieCard = ({
   movie,
   variant = "vertical",
   showTittle = true,
+  index,
 }: MovieCardProps) => {
   const aspectClass = variant === "horizontal" ? "aspect-3/2" : "aspect-2/3"
 
@@ -21,6 +23,8 @@ export const MovieCard = ({
     variant === "horizontal"
       ? IMG_URL + movie.posterUrl
       : IMG_URL + movie.thumbUrl
+
+  const isPriority = index < 7
 
   return (
     <div className="group flex flex-col items-center justify-between select-none">
@@ -31,6 +35,7 @@ export const MovieCard = ({
           src={src}
           alt={movie.name}
           fill
+          priority={isPriority}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
           className={`rounded-xl object-cover transition-transform duration-500 group-hover:scale-110`}
         />

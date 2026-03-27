@@ -1,14 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CategoryService } from '../category/category.service';
 import {
   AppResponse,
   MovieDetailResponse,
   MovieMood,
+  MoviesResponse,
   type MovieHomeData,
 } from '@workspace/shared/schema/movie/movie.response';
-import { MovieMoodParamsDto } from './dto/movie-query.dto';
-import { prisma } from '@/prisma/client';
+import { MovieMoodParamsDto, MovieQueryDto } from './dto/movie-query.dto';
 
 @Controller('movies')
 export class MoviesController {
@@ -19,33 +19,8 @@ export class MoviesController {
 
   @Get('home')
   async getHomeData(): Promise<AppResponse<MovieHomeData>> {
-    const [
-      hero,
-      korean,
-      chienese,
-      usuk,
-      horror,
-      topViewHorror,
-      chieurap,
-      topViewChieurap,
-      categories,
-    ] = await Promise.all([
-      this.moviesService.getHomeByQuery({ limit: 5 }),
-      this.moviesService.getHomeByQuery({ country: 'han-quoc' }),
-      this.moviesService.getHomeByQuery({ country: 'trung-quoc' }),
-      this.moviesService.getHomeByQuery({ country: 'au-my' }),
-      this.moviesService.getHomeByQuery({ category: 'kinh-di' }),
-      this.moviesService.getHomeByQuery({
-        category: 'kinh-di',
-        featured: true,
-        limit: 8,
-      }),
-      this.moviesService.getHomeByQuery({ chieurap: true }),
-      this.moviesService.getHomeByQuery({
-        chieurap: true,
-        featured: true,
-        limit: 8,
-      }),
+    const [data, categories] = await Promise.all([
+      this.moviesService.getHomeData(),
       this.categoryService.getHome(),
     ]);
 
@@ -53,14 +28,7 @@ export class MoviesController {
       message: 'Thành công!',
       status: true,
       data: {
-        hero,
-        korean,
-        chienese,
-        usuk,
-        horror,
-        topViewHorror,
-        chieurap,
-        topViewChieurap,
+        ...data,
         categories,
       },
     };
@@ -88,6 +56,19 @@ export class MoviesController {
 
     return {
       message: 'Thành công!',
+      status: true,
+      data,
+    };
+  }
+
+  @Get()
+  async getMovies(
+    @Query() query: MovieQueryDto,
+  ): Promise<AppResponse<MoviesResponse>> {
+    const data = await this.moviesService.getMovies(query);
+
+    return {
+      message: 'Lấy danh sách phim thành công!',
       status: true,
       data,
     };

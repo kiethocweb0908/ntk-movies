@@ -25,30 +25,46 @@ const menuList = [
 
 export async function MainNav() {
   // fetch category và country
-  const [categories, countries] = await Promise.all([
-    api<CategoryResponse[]>("/category"),
-    api<CountryResponse[]>("/country"),
-  ])
+  try {
+    const [categories, countries] = await Promise.all([
+      api<CategoryResponse[]>("/category"),
+      api<CountryResponse[]>("/country"),
+    ])
 
-  return (
-    <div className="hidden items-center text-secondary lg:flex">
-      {/* Dùng chung component cho Thể loại */}
-      <NavItemWithContent title="Thể loại" items={categories} href="the-loai" />
+    return (
+      <div className="hidden items-center text-secondary lg:flex">
+        {/* Dùng chung component cho Thể loại */}
+        <NavItemWithContent
+          title="Thể loại"
+          items={categories}
+          href="the-loai"
+        />
 
-      {/* Dùng chung component cho Quốc gia */}
-      <NavItemWithContent title="Quốc gia" items={countries} href="quoc-gia" />
+        {/* Dùng chung component cho Quốc gia */}
+        <NavItemWithContent
+          title="Quốc gia"
+          items={countries}
+          href="quoc-gia"
+        />
 
-      {/* Các mục đơn giản khác */}
+        {/* Các mục đơn giản khác */}
 
-      {menuList.map((i) => (
-        <Link
-          href={`/${i.slug}`}
-          key={i.slug}
-          className="px-4 py-2 text-sm hover:text-textHover"
-        >
-          {i.name}
-        </Link>
-      ))}
-    </div>
-  )
+        {menuList.map((i) => (
+          <Link
+            href={`/${i.slug}`}
+            key={i.slug}
+            className="px-4 py-2 text-sm hover:text-textHover"
+          >
+            {i.name}
+          </Link>
+        ))}
+      </div>
+    )
+  } catch (error) {
+    return (
+      <div className="hidden items-center px-4 text-sm font-medium text-primary lg:flex">
+        Menu đang bảo trì
+      </div>
+    )
+  }
 }

@@ -19,6 +19,8 @@ const MovieCarousel = ({
   variant = "horizontal",
   isFull = false,
 }: MovieCarouselProps) => {
+  if (!movies) return
+  console.log(movies)
   const basisClass = isFull
     ? "basis-1/2 sm:basis-1/4 lg:basis-1/6 xl:basis-1/8 "
     : "md:basis-1/3 lg:basis-1/4 xl:basis-1/4"
@@ -32,7 +34,7 @@ const MovieCarousel = ({
             className={`basis-1/2 pl-1 ${basisClass}`}
           >
             <div className="relative p-1">
-              <MovieCard movie={movie} variant={variant} />
+              <MovieCard movie={movie} variant={variant} index={index} />
             </div>
           </CarouselItem>
         ))}

@@ -17,7 +17,7 @@ export default async function Page() {
 
   const {
     categories,
-    chienese,
+    chinese,
     chieurap,
     topViewChieurap,
     hero,
@@ -35,7 +35,7 @@ export default async function Page() {
         <CategoryList categories={categories} />
         <MoodSection />
         <MovieRow tittle="Phim Hàn Quốc mới" movies={korean} />
-        <MovieRow tittle="Phim Trung Quốc mới" movies={chienese} />
+        <MovieRow tittle="Phim Trung Quốc mới" movies={chinese} />
         <MovieRow tittle="Phim US-UK mới" movies={usuk} />
         <FeaturedSlider movies={chieurap} tittle="Phim chiếu rạp mới" />
         <TopTist movies={topViewChieurap} />

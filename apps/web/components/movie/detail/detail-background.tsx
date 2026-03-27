@@ -7,7 +7,6 @@ interface DetailBackgroundProps {
 
 const DetailBackground = ({ poster }: DetailBackgroundProps) => {
   if (!poster) return
-  console.log(poster)
   return (
     <div className="group relative aspect-2/1 w-full overflow-hidden select-none sm:aspect-3/1 xl:aspect-4/1">
       <Image

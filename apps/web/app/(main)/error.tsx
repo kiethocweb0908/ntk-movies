@@ -10,10 +10,10 @@ export default function Error({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-black p-5 text-center text-white">
       <h2 className="mb-4 text-2xl font-bold text-red-500">
-        Ối! Server đang bận hoặc bảo trì rồi Kiệt ơi 😅
+        Ối! Server đang bận hoặc bảo trì rồi 😅
       </h2>
       <p className="mb-6 text-gray-400">
-        Đừng lo, Kiệt thử bấm nút bên dưới để tải lại trang nhé.
+        Đừng lo, bấm nút bên dưới để tải lại trang nhé.
       </p>
       <button
         onClick={() => reset()}
