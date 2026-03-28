@@ -62,7 +62,7 @@ export interface MovieResponseFull extends MovieResponse {
 }
 
 export interface MoviesResponse {
-  movies: MoviesResponse[] | []
+  movies: MovieResponse[] | []
   meta: {
     total: number
     page: number
