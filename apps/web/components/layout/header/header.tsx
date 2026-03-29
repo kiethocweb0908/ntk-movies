@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from "react"
 import { Logo } from "./logo"
-import { SearchBar } from "./search-bar"
 import UserActions from "./user-actions"
 import { cn } from "@workspace/ui/lib/utils"
+import SearchBar from "@/components/search/search-bar"
+import SearchMobile from "@/components/search/search-mobile"
 
 interface HeaderProps {
   mainNav: React.ReactNode
@@ -43,7 +44,8 @@ const Header = ({ mainNav }: HeaderProps) => {
         {mainNav}
       </div>
 
-      <UserActions />
+      {/* <UserActions /> */}
+      <SearchMobile />
     </div>
   )
 }

@@ -11,7 +11,7 @@ const MovieActionToolbar = ({ viewCount }: MovieActionToolbarProps) => {
     <div className="flex w-full flex-col items-center justify-between gap-6 p-5 sm:flex-row sm:gap-5 lg:p-8">
       <Link
         href={``}
-        className="flex w-full cursor-pointer items-center justify-center gap-4 rounded-full bg-linear-to-r from-yellow-400 to-yellow-100 px-4 py-4! text-lg font-semibold text-black transition-colors hover:bg-gray-200 sm:w-50 sm:px-6 md:w-60 md:px-8 md:py-3 lg:w-80 xl:w-50"
+        className="flex w-full cursor-pointer items-center justify-center gap-4 rounded-full bg-linear-to-r from-yellow-400 to-yellow-100 px-4 py-4! text-lg font-semibold text-black transition-colors hover:to-yellow-200 sm:w-50 sm:px-6 md:w-60 md:px-8 md:py-3 lg:w-80 xl:w-50"
       >
         <Play fill="currentColor" className="size-4 md:size-5" /> Xem ngay
       </Link>

@@ -28,6 +28,7 @@ const Page = async ({ searchParams }: PageProps) => {
     "loai-phim": type,
     nam: year,
     "sap-xep": sort,
+    q: search,
   } = await searchParams
 
   const queryObj: Record<string, string> = {
@@ -40,6 +41,7 @@ const Page = async ({ searchParams }: PageProps) => {
   if (type) queryObj.type = type
   if (year) queryObj.year = year
   if (sort) queryObj.sort = sort
+  if (search) queryObj.search = search
 
   const queryString = new URLSearchParams(queryObj).toString()
   console.log(queryString)
@@ -48,10 +50,14 @@ const Page = async ({ searchParams }: PageProps) => {
     data: { meta, movies },
   } = await api<AppResponse<MoviesResponse>>(`/movies?${queryString}`)
 
+  const displayTitle = search
+    ? `Tìm kiếm: "${search.replace(/-/g, " ")}"`
+    : `Thể loại: ${category?.replace(/-/g, " ") || "tất cả"}, Quốc gia: ${country?.replace(/-/g, " ") || "tất cả"}, Loại phim: ${type?.replace(/-/g, " ") || "tất cả"}, sắp xếp: ${sort?.replace(/-/g, " ") ? "mới nhát" : "lượt xem"}`
+
   return (
     <main className="px-5 pt-28 text-white">
       <div className="mb-6 flex flex-col">
-        <TitleSection title={`Tìm kiếm `} className="mb-3" />
+        <TitleSection title={displayTitle} className="mb-3" />
         <Filter initialFilters={queryObj} />
       </div>
       {movies.length > 0 ? (

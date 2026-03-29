@@ -13,7 +13,7 @@ export async function MainNav() {
     ])
 
     return (
-      <div className="hidden items-center text-secondary lg:flex">
+      <div className="hidden items-center text-secondary xl:flex">
         {MOVIE_TYPES.map((type) => (
           <NavItemWithContent
             key={type.slug}
