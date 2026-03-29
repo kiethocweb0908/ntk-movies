@@ -38,7 +38,7 @@ const MoviePagination = ({ totalPages, currentPage }: Props) => {
       setWindowSize(mediaQuery.matches ? 6 : 4)
     }
 
-    handleChange() // set lần đầu
+    handleChange()
     mediaQuery.addEventListener("change", handleChange)
     return () => {
       mediaQuery.removeEventListener("change", handleChange)
@@ -50,7 +50,7 @@ const MoviePagination = ({ totalPages, currentPage }: Props) => {
   const createPageURL = (pageNumber: number | string) => {
     if (pageNumber === currentPage) return
     const params = new URLSearchParams(searchParams.toString())
-    params.set("page", pageNumber.toString())
+    params.set("trang", pageNumber.toString())
     return `?${params.toString()}`
   }
 

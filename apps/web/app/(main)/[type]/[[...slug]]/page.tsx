@@ -1,4 +1,4 @@
-import FilterDrawer from "@/components/filter-drawer/filter-drawer"
+import Filter from "@/components/filter/filter"
 import MovieList from "@/components/movie/movie-list"
 import MoviePagination from "@/components/movie/movie-pagination"
 import TitleSection from "@/components/ui/tittle-section"
@@ -16,7 +16,7 @@ interface PageProps {
     slug?: string
   }>
   searchParams: Promise<{
-    page?: string
+    trang?: string
     limit?: string
     [key: string]: string | string[] | undefined
   }>
@@ -40,8 +40,8 @@ const Page = async ({ params, searchParams }: PageProps) => {
     notFound()
   }
 
-  const { page = "1", limit = "18" } = resolvedSearchParams
-  const queryObj: Record<string, string> = { page, limit }
+  const { trang = "1" } = resolvedSearchParams
+  const queryObj: Record<string, string> = { page: trang, limit: "18" }
 
   if (currentSlug) {
     if (type === "the-loai") queryObj.categorySlug = currentSlug
@@ -71,9 +71,9 @@ const Page = async ({ params, searchParams }: PageProps) => {
 
   return (
     <main className="px-5 pt-28 text-white">
-      <div className="flex items-center justify-between">
-        <TitleSection title={displayTitle} />
-        <FilterDrawer />
+      <div className="mb-6 flex flex-col">
+        <TitleSection title={displayTitle} className="mb-3" />
+        <Filter initialFilters={queryObj} />
       </div>
       {movies.length > 0 ? (
         <>
