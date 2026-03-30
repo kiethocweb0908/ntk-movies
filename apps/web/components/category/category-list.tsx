@@ -20,7 +20,7 @@ const CategoryList = ({ categories }: CategoryListProps) => {
   if (!categories) return null
   return (
     <div className="">
-      <TittleSection tittle="Bạn quan tâm gì?" />
+      <TittleSection title="Bạn quan tâm gì?" />
 
       <div className="grid grid-cols-4 gap-4 text-primary lg:grid-cols-8 lg:gap-5">
         {categories.map((category, index) => {

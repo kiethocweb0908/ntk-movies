@@ -61,7 +61,7 @@ const MovieInfoSide = ({ movie }: MovieInfoSideProps) => {
       <div className="w-full xl:hidden">
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="details" className="border-none">
-            <AccordionTrigger className="justify-center text-yellow-400 hover:no-underline">
+            <AccordionTrigger className="translate-x-3 justify-center text-yellow-400 hover:no-underline">
               Xem thông tin chi tiết
             </AccordionTrigger>
             <AccordionContent className="border-t border-slate-700 py-4">

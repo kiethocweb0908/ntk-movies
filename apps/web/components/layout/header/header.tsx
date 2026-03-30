@@ -6,12 +6,17 @@ import UserActions from "./user-actions"
 import { cn } from "@workspace/ui/lib/utils"
 import SearchBar from "@/components/search/search-bar"
 import SearchMobile from "@/components/search/search-mobile"
+import { CategoryResponse } from "@workspace/shared/schema/category/category.response"
+import { CountryResponse } from "@workspace/shared/schema/country/country.response"
+import { MainNav } from "./main-nav"
+import MobileNav from "./mobile-nav"
 
 interface HeaderProps {
-  mainNav: React.ReactNode
+  categories: CategoryResponse[]
+  countries: CountryResponse[]
 }
 
-const Header = ({ mainNav }: HeaderProps) => {
+const Header = ({ categories, countries }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false)
   useEffect(() => {
     const handleScroll = () => {
@@ -36,16 +41,20 @@ const Header = ({ mainNav }: HeaderProps) => {
           : "h-22 bg-transparent"
       )}
     >
-      <div className="flex flex-1 gap-6">
+      <div className="flex flex-1 items-center gap-6">
         <Logo />
 
         <SearchBar />
 
-        {mainNav}
+        <MainNav categories={categories} countries={countries} />
       </div>
 
+      {/* right */}
+      <div className="flex items-center justify-end gap-6">
+        <SearchMobile />
+        <MobileNav categories={categories} countries={countries} />
+      </div>
       {/* <UserActions /> */}
-      <SearchMobile />
     </div>
   )
 }

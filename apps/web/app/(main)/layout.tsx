@@ -6,6 +6,9 @@ import { cn } from "@workspace/ui/lib/utils"
 import Header from "@/components/layout/header/header"
 import Footer from "@/components/layout/footer"
 import { MainNav } from "@/components/layout/header/main-nav"
+import { api } from "@/lib/api"
+import { CategoryResponse } from "@workspace/shared/schema/category/category.response"
+import { CountryResponse } from "@workspace/shared/schema/country/country.response"
 
 // import { type CategoryType } from "@workspace/shared"
 
@@ -24,6 +27,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // fetch category và country
+  const [categories, countries] = await Promise.all([
+    api<CategoryResponse[]>("/category"),
+    api<CountryResponse[]>("/country"),
+  ])
+
   return (
     <html
       lang="vi"
@@ -36,7 +45,7 @@ export default async function RootLayout({
       )}
     >
       <body>
-        <Header mainNav={<MainNav />} />
+        <Header categories={categories} countries={countries} />
         <ThemeProvider>{children}</ThemeProvider>
         <Footer />
       </body>
