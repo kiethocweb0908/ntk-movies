@@ -5,9 +5,11 @@ import Image from "next/image"
 
 interface TabActorsProps {
   actors: ActorResponse[]
+  grid?: 2 | 3 | 4 | 5 | 6
 }
 
-const TabActors = ({ actors }: TabActorsProps) => {
+const TabActors = ({ actors, grid = 6 }: TabActorsProps) => {
+  const gridClass = `md:grid-cols-${grid - 2 < 4 ? 4 : grid - 2} lg:grid-cols-${grid}`
   if (!actors || actors.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-slate-500 italic">
@@ -17,7 +19,7 @@ const TabActors = ({ actors }: TabActorsProps) => {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+    <div className={`grid grid-cols-2 gap-6 sm:grid-cols-3 ${gridClass}`}>
       {actors.map((actor) => (
         <div
           key={actor.id}

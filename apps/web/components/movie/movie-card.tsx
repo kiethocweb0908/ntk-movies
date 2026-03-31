@@ -8,17 +8,41 @@ interface MovieCardProps {
   movie: MovieResponse
   variant?: "horizontal" | "vertical"
   showTittle?: boolean
-  index: number
+  index?: number
+  isHorizontal?: boolean
 }
 
 export const MovieCard = ({
   movie,
   variant = "vertical",
   showTittle = true,
-  index,
+  index = 8,
+  isHorizontal = false,
 }: MovieCardProps) => {
-  const aspectClass = variant === "horizontal" ? "aspect-3/2" : "aspect-2/3"
+  if (isHorizontal)
+    return (
+      <div className="group flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-white/5">
+        <div className="relative aspect-3/2 h-18">
+          <Image
+            src={IMG_URL + movie.posterUrl}
+            alt={movie.name}
+            fill
+            sizes="100px"
+            className="rounded object-cover"
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <span className="line-clamp-1 text-sm font-medium text-white group-hover:text-textHover">
+            {movie.name}
+          </span>
+          <span className="text-xs text-primary/80 group-hover:text-textHover/60">
+            {movie.originName}
+          </span>
+        </div>
+      </div>
+    )
 
+  const aspectClass = variant === "horizontal" ? "aspect-3/2" : "aspect-2/3"
   const src =
     variant === "horizontal"
       ? IMG_URL + movie.posterUrl

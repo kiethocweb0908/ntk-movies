@@ -3,12 +3,17 @@ import { MoviesService } from './movies.service';
 import { CategoryService } from '../category/category.service';
 import {
   AppResponse,
+  EpisodeVideoResponse,
   MovieDetailResponse,
   MovieMood,
   MoviesResponse,
   type MovieHomeData,
 } from '@workspace/shared/schema/movie/movie.response';
-import { MovieMoodParamsDto, MovieQueryDto } from './dto/movie-query.dto';
+import {
+  MovieEpisodeDto,
+  MovieMoodParamsDto,
+  MovieQueryDto,
+} from './dto/movie-query.dto';
 
 @Controller('movies')
 export class MoviesController {
@@ -69,6 +74,19 @@ export class MoviesController {
 
     return {
       message: 'Lấy danh sách phim thành công!',
+      status: true,
+      data,
+    };
+  }
+
+  @Get('episode')
+  async getEpisode(
+    @Query() query: MovieEpisodeDto,
+  ): Promise<AppResponse<EpisodeVideoResponse>> {
+    const data = await this.moviesService.getEpisode(query);
+
+    return {
+      message: 'Lấy tập phim thành công!',
       status: true,
       data,
     };

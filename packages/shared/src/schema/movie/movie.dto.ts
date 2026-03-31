@@ -23,4 +23,11 @@ export const MovieMoodSchema = z.object({
   ),
 })
 
+export const MovieEpisodeSchema = z.object({
+  movieSlug: z.string(),
+  episodeSlug: z.string(),
+  serverId: z.string(),
+})
+
 export type MovieQuery = z.infer<typeof MovieQuerySchema>
+export type MovieEpisode = z.infer<typeof MovieEpisodeSchema>

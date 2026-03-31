@@ -4,12 +4,14 @@ import { MovieServerResponse } from "@workspace/shared/schema/movie/movie.respon
 import { Database } from "lucide-react"
 import { Movie_WATCH } from "@workspace/ui/lib/config"
 import { EpisodeItem } from "../../episode-item"
+import { useParams, useSearchParams } from "next/navigation"
 
 interface TabEpisodesProps {
   servers: MovieServerResponse[]
+  movieSlug: string
 }
 
-const TabEpisodes = ({ servers }: TabEpisodesProps) => {
+const TabEpisodes = ({ servers, movieSlug }: TabEpisodesProps) => {
   if (!servers || servers.length === 0) {
     return (
       <div className="flex h-32 items-center justify-center text-slate-500 italic">
@@ -17,6 +19,12 @@ const TabEpisodes = ({ servers }: TabEpisodesProps) => {
       </div>
     )
   }
+
+  const params = useParams()
+  const sParams = useSearchParams()
+
+  const currentEpisodeSlug = params.episode as string
+  const currentServer = sParams.get("server")
 
   return (
     <div className="flex animate-in flex-col gap-10 duration-700 fade-in">
@@ -38,8 +46,11 @@ const TabEpisodes = ({ servers }: TabEpisodesProps) => {
                 key={ep.slug}
                 slug={ep.slug}
                 name={ep.name}
-                href={`${Movie_WATCH}/${ep.slug}`}
+                href={`${Movie_WATCH}/${movieSlug}/${ep.slug}?server=${server.id}`}
                 isLast={index === server.episodes.length - 1}
+                isActive={
+                  currentEpisodeSlug === ep.slug && currentServer === server.id
+                }
               />
             ))}
           </div>

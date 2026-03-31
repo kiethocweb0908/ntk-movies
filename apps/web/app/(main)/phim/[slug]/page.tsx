@@ -38,6 +38,7 @@ async function Page({ params }: PageProps) {
             related={related}
             servers={servers}
             trailerUrl={movie.trailerUrl || ""}
+            movieSlug={movie.slug}
           />
         </div>
       </div>

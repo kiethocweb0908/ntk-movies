@@ -3,11 +3,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MovieQueryDto } from './dto/movie-query.dto';
 import { Prisma } from '@prisma/client';
 import {
+  EpisodeVideoResponse,
   MovieDetailResponse,
   MovieResponse,
   MoviesResponse,
 } from '@workspace/shared/schema/movie/movie.response';
-import { MovieQuery } from '@workspace/shared/schema/movie/movie.dto';
+import {
+  MovieEpisode,
+  MovieQuery,
+} from '@workspace/shared/schema/movie/movie.dto';
 
 @Injectable()
 export class MoviesService {
@@ -142,7 +146,7 @@ export class MoviesService {
       include: {
         episodes: {
           where: { published: true },
-          select: { name: true, slug: true, linkEmbed: true },
+          select: { name: true, slug: true },
           orderBy: { name: 'asc' },
         },
       },
@@ -499,5 +503,24 @@ export class MoviesService {
         totalPages: Math.ceil(totalCount / limit),
       },
     };
+  }
+
+  async getEpisode({
+    episodeSlug,
+    movieSlug,
+    serverId,
+  }: MovieEpisode): Promise<EpisodeVideoResponse> {
+    const episode = await this.prisma.episode.findFirst({
+      where: {
+        slug: episodeSlug,
+        server: {
+          id: serverId,
+          movie: { slug: movieSlug },
+        },
+      },
+      select: { linkEmbed: true },
+    });
+    if (!episode) throw new NotFoundException('Tập phim không tồn tại');
+    return episode;
   }
 }

@@ -92,7 +92,11 @@ export interface MovieMood {
 export interface EpisodeResponse {
   name: string
   slug: string
-  linkEmbed?: string | null
+  // linkEmbed?: string | null
+}
+
+export interface EpisodeVideoResponse {
+  linkEmbed: string | null
 }
 
 export interface MovieServerResponse {

@@ -21,6 +21,7 @@ interface MovieTabsProps {
   servers: MovieServerResponse[]
   actors: ActorResponse[]
   related: MovieResponse[]
+  movieSlug: string
 }
 
 const tabClass =
@@ -35,6 +36,7 @@ const MovieTabs = ({
   servers,
   actors,
   related,
+  movieSlug,
 }: MovieTabsProps) => {
   return (
     <Tabs defaultValue="trailer" className="w-full px-5 py-6 lg:px-8 lg:py-4">
@@ -67,7 +69,7 @@ const MovieTabs = ({
         </TabsContent>
 
         <TabsContent value="episodes">
-          <TabEpisodes servers={servers} />
+          <TabEpisodes servers={servers} movieSlug={movieSlug} />
         </TabsContent>
 
         <TabsContent value="actors">
