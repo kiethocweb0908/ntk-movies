@@ -7,6 +7,17 @@
 @source "../../../components/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
+/* @custom-variant media-playing (&[data-playing]);
+@custom-variant media-paused (&[data-paused]);
+@custom-variant media-muted (&[data-muted]);
+@custom-variant media-fullscreen (&[data-fullscreen]); */
+
+/* Đảm bảo Controls hiện lên khi có tương tác */
+/* [data-controls] {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+} */
+
 :root {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.145 0 0);

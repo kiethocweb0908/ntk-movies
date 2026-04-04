@@ -28,10 +28,10 @@ const MovieWatchInfo = ({ movie }: MovieWatchInfoProps) => {
 
         <div className="space-y-3">
           <div>
-            <h2 className="line-clamp-2 text-lg font-semibold text-balance text-textHover">
+            <h2 className="line-clamp-1 text-lg font-semibold text-balance text-textHover">
               {movie.name}
             </h2>
-            <span className="line-clamp-2 text-base text-balance text-textHover/60 italic">
+            <span className="line-clamp-1 text-base text-balance text-textHover/60 italic">
               {movie.originName}
             </span>
           </div>

@@ -518,7 +518,7 @@ export class MoviesService {
           movie: { slug: movieSlug },
         },
       },
-      select: { linkEmbed: true },
+      select: { linkEmbed: true, linkM3u8: true, name: true },
     });
     if (!episode) throw new NotFoundException('Tập phim không tồn tại');
     return episode;

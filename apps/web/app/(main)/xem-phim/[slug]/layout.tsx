@@ -2,7 +2,6 @@
 import MovieWatchInfo from "@/components/movie/watch/movie-watch-info"
 import TabActors from "@/components/movie/detail/tabs/tab-actors"
 import TabEpisodes from "@/components/movie/detail/tabs/tab-episodes"
-import RatingBadge from "@/components/ui/rating-badge"
 import TitleSection from "@/components/ui/tittle-section"
 import { api } from "@/lib/api"
 import {
@@ -10,9 +9,6 @@ import {
   MovieDetailResponse,
 } from "@workspace/shared/schema/movie/movie.response"
 
-import { IMG_URL } from "@workspace/ui/lib/config"
-
-import Image from "next/image"
 import Link from "next/link"
 import WatchSection from "@/components/movie/watch/watch-section"
 import { MovieCard } from "@/components/movie/movie-card"
@@ -38,7 +34,7 @@ export default async function MovieWatchLayout({
     <div className="mx-auto min-h-screen px-5 pt-40 pb-5 text-white">
       <TitleSection title={movie.name} />
       {/* 1. Vùng Video Player (Thay đổi theo tập) */}
-      <div className="aspect-video w-full overflow-hidden rounded-xl bg-background shadow-2xl">
+      <div className="mb-10 aspect-video w-full overflow-hidden rounded-xl bg-background shadow-2xl">
         {children}
       </div>
 

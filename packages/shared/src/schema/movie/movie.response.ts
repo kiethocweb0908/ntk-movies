@@ -97,6 +97,9 @@ export interface EpisodeResponse {
 
 export interface EpisodeVideoResponse {
   linkEmbed: string | null
+  linkM3u8: string | null
+
+  name: string | null
 }
 
 export interface MovieServerResponse {
