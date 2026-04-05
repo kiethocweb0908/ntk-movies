@@ -32,8 +32,14 @@ export default async function EpisodePage({
   const [{ slug, episode }, sParams] = await Promise.all([params, searchParams])
   const serverId = sParams.server
 
+  const query = new URLSearchParams({
+    movieSlug: slug,
+    episodeSlug: episode,
+    ...(serverId && { serverId }),
+  })
+
   const { data } = await api<AppResponse<EpisodeVideoResponse>>(
-    `/movies/episode?movieSlug=${slug}&episodeSlug=${episode}&serverId=${serverId}`
+    `/movies/episode?${query.toString()}`
   )
   if (!data.linkM3u8 && !data.linkM3u8)
     return <div className="p-4 text-center">Không tìm thấy link phim</div>

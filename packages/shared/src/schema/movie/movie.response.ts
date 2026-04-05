@@ -125,3 +125,8 @@ export interface MovieDetailResponse {
   servers: MovieServerResponse[]
   related: MovieResponse[]
 }
+
+export interface FirstEpisodeResponse {
+  serverId: string
+  episodeSlug: string
+}

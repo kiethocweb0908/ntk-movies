@@ -49,6 +49,7 @@ export default function VideoPlayer({ url, title = "" }: VideoPlayerProps) {
       <MediaPlayer
         src={url}
         viewType="video"
+        preload="auto"
         crossOrigin
         playsInline
         streamType={url.includes("m3u8") ? "on-demand" : "unknown"}

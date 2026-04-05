@@ -510,17 +510,60 @@ export class MoviesService {
     movieSlug,
     serverId,
   }: MovieEpisode): Promise<EpisodeVideoResponse> {
+    const whereCondition: Prisma.EpisodeWhereInput = {
+      slug: episodeSlug,
+      server: {
+        movie: { slug: movieSlug },
+      },
+    };
+
+    if (serverId) {
+      whereCondition.server!.id = serverId;
+    }
+
     const episode = await this.prisma.episode.findFirst({
-      where: {
-        slug: episodeSlug,
-        server: {
-          id: serverId,
-          movie: { slug: movieSlug },
-        },
+      where: whereCondition,
+      orderBy: {
+        server: { createdAt: 'asc' },
       },
       select: { linkEmbed: true, linkM3u8: true, name: true },
     });
     if (!episode) throw new NotFoundException('Tập phim không tồn tại');
     return episode;
+  }
+
+  async firstEpisode(slugMovie: string) {
+    const movie = await this.prisma.movie.findFirst({
+      where: { slug: slugMovie },
+      select: {
+        servers: {
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+          select: {
+            id: true,
+            episodes: {
+              orderBy: { slug: 'asc' },
+              take: 1,
+              select: {
+                slug: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (
+      !movie ||
+      movie.servers.length === 0 ||
+      movie.servers[0].episodes.length === 0
+    ) {
+      throw new NotFoundException('Không tìm thấy tập phim');
+    }
+
+    return {
+      serverId: movie.servers[0].id,
+      episodeSlug: movie.servers[0].episodes[0].slug,
+    };
   }
 }

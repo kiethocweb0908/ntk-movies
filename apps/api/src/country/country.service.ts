@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { type CountryResponse } from '@workspace/shared/schema/country/country.response';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CountryService {

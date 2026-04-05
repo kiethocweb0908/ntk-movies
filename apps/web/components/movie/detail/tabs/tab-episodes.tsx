@@ -49,7 +49,10 @@ const TabEpisodes = ({ servers, movieSlug }: TabEpisodesProps) => {
                 href={`${Movie_WATCH}/${movieSlug}/${ep.slug}?server=${server.id}`}
                 isLast={index === server.episodes.length - 1}
                 isActive={
-                  currentEpisodeSlug === ep.slug && currentServer === server.id
+                  currentEpisodeSlug === ep.slug &&
+                  (currentServer
+                    ? currentServer === server.id
+                    : servers[0]!.id === server.id)
                 }
               />
             ))}

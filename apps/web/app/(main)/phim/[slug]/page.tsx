@@ -32,7 +32,10 @@ async function Page({ params }: PageProps) {
 
         {/* right */}
         <div className="relative w-full rounded-2xl bg-slate-900/40 xl:basis-2/3">
-          <MovieActionToolbar viewCount={movie.viewCount} />
+          <MovieActionToolbar
+            viewCount={movie.viewCount}
+            slugMovie={movie.slug}
+          />
           <MovieTabs
             actors={actors}
             related={related}

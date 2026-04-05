@@ -91,4 +91,15 @@ export class MoviesController {
       data,
     };
   }
+
+  @Get('first-episode/:slugMovie')
+  async firstEpisode(@Param('slugMovie') slugMovie: string) {
+    const data = await this.moviesService.firstEpisode(slugMovie);
+
+    return {
+      message: 'Lấy tập phim thành công!',
+      status: true,
+      data,
+    };
+  }
 }

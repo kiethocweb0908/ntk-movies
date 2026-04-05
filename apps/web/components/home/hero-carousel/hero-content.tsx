@@ -110,6 +110,7 @@ const HeroContent = memo(
         >
           <ActionButton variant="play" path={currentMovie.slug} />
           <ActionButton variant="favorite" />
+          <ActionButton variant="info" path={currentMovie.slug} />
         </motion.div>
       </div>
     )
