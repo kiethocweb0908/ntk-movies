@@ -28,8 +28,6 @@ import MediaGesture from "./media-gesture"
 import VideoProgress from "./video-progress"
 import VideoTooltip from "./video-tooltip"
 import VideoVolume from "./video-volume"
-import Image from "next/image"
-import { IMG_URL } from "@workspace/ui/lib/config"
 
 interface VideoPlayerProps {
   url: string
@@ -49,7 +47,6 @@ export default function VideoPlayer({ url, title = "" }: VideoPlayerProps) {
       <MediaPlayer
         src={url}
         viewType="video"
-        preload="auto"
         crossOrigin
         playsInline
         streamType={url.includes("m3u8") ? "on-demand" : "unknown"}

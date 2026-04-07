@@ -12,6 +12,7 @@ async function bootstrap() {
     origin: env.FRONTEND_API, // Port của Next.js
     methods: 'GET,POST,PUT,DELETE,PATCH',
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
   app.useGlobalPipes(new ZodValidationPipe());

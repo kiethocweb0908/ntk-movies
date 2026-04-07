@@ -16,6 +16,7 @@ model OTP {
 
   expiresAt   DateTime
   createdAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
 }
@@ -43,6 +44,10 @@ model User {
   avatarId     String?
   roleId       String     @db.Uuid
 
+  resetPasswordToken String? 
+  resetPasswordExpires DateTime?
+
+
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -62,6 +67,11 @@ model Session {
   userId       String   @db.Uuid
   refreshToken String   @unique
   expiresAt    DateTime
+
+  device   String?  
+  browser     String?
+  os          String?
+  ipAddress    String?
 
   createdAt    DateTime @default(now())
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)

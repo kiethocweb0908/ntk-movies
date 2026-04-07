@@ -6,6 +6,7 @@ export async function api<T>(
 ): Promise<T> {
   try {
     const res = await fetch(`${API_URL}${endpoint}`, {
+      credentials: "include",
       ...options,
     })
 
