@@ -9,9 +9,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import {
   DeviceInfoType,
-  LoginType,
   RegisterType,
   ResendOtpType,
+  ResetPasswordType,
   VerifyOtpType,
 } from '@workspace/shared/schema/auth/auth.dto';
 import crypto from 'crypto';
@@ -68,24 +68,44 @@ export class AuthService {
     return await argon2.verify(hash, password);
   }
   // Tạo token
-  async generateTokens(userId: string, deviceInfo?: DeviceInfoType) {
+  async generateTokens(userId: string, deviceInfo: DeviceInfoType) {
     const refreshToken = this.randomString();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
+    const isMobile = deviceInfo?.device !== 'Desktop';
+    const existingSessionInGroup = await this.prisma.session.findFirst({
+      where: {
+        userId,
+        device: isMobile ? { notIn: ['Desktop'] } : { in: ['Desktop'] },
+      },
+    });
+
     const [accessToken] = await Promise.all([
       this.jwtService.signAsync({ sub: userId }, { expiresIn: '15m' }),
-      this.prisma.session.create({
-        data: {
-          userId,
-          refreshToken,
-          expiresAt,
-          device: deviceInfo?.device,
-          browser: deviceInfo?.browser,
-          os: deviceInfo?.os,
-          ipAddress: deviceInfo?.ipAddress,
-        },
-      }),
+      existingSessionInGroup
+        ? this.prisma.session.update({
+            where: { id: existingSessionInGroup.id },
+            data: {
+              refreshToken,
+              expiresAt,
+              device: deviceInfo?.device,
+              browser: deviceInfo?.browser,
+              os: deviceInfo?.os,
+              ipAddress: deviceInfo?.ipAddress,
+            },
+          })
+        : this.prisma.session.create({
+            data: {
+              userId,
+              refreshToken,
+              expiresAt,
+              device: deviceInfo?.device,
+              browser: deviceInfo?.browser,
+              os: deviceInfo?.os,
+              ipAddress: deviceInfo?.ipAddress,
+            },
+          }),
     ]);
 
     return { accessToken, refreshToken };
@@ -102,16 +122,43 @@ export class AuthService {
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/auth/refresh',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+  }
+
+  // clear token
+  clearCookies(res: Response) {
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite:
+        process.env.NODE_ENV === 'production'
+          ? ('none' as const)
+          : ('lax' as const),
+      path: '/',
+      expires: new Date(0),
+    };
+
+    res.cookie('accessToken', '', cookieOptions);
+    res.cookie('refreshToken', '', cookieOptions);
+  }
+  // Đăng xuất
+  async deleteSession(userId: string, refreshToken: string) {
+    await this.prisma.session.deleteMany({
+      where: {
+        userId,
+        refreshToken,
+      },
     });
   }
 
@@ -188,7 +235,7 @@ export class AuthService {
     };
   }
 
-  // Xác thực OTP (đăng ký và quên mật khẩu mật khẩu)
+  // Xác thực OTP (đăng ký và quên mật khẩu)
   async verifyOTP(
     data: VerifyOtpType,
     deviceInfo?: DeviceInfoType,
@@ -240,6 +287,7 @@ export class AuthService {
 
       const { accessToken, refreshToken } = await this.generateTokens(
         newUser.id,
+        deviceInfo!,
       );
       return {
         accessToken,
@@ -320,6 +368,139 @@ export class AuthService {
     await this.mailService.sendOtp(email, otp, fullName, type);
     return {
       message: `Mã OTP đã được gửi lại ${email}`,
+    };
+  }
+
+  // Lấy thông tin
+  async getMe(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        userName: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+        role: {
+          select: {
+            slug: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Người dùng không tồn tại');
+    }
+
+    return user;
+  }
+
+  // Quên mật khẩu
+  async forgotPassword(identifier: string) {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: identifier }, { userName: identifier }],
+      },
+    });
+
+    if (!existingUser)
+      throw new NotFoundException('Người dùng không tồn tại trong hệ thống');
+
+    const otp = this.generateOTP();
+    const expiresAt = this.expiresAtOTP();
+
+    const existingOTP = await this.prisma.oTP.findFirst({
+      where: {
+        email: existingUser.email,
+        type: 'FORGOT_PASSWORD',
+      },
+    });
+    existingOTP
+      ? await this.prisma.oTP.updateMany({
+          where: {
+            email: existingUser.email,
+            type: 'FORGOT_PASSWORD',
+          },
+          data: {
+            attempts: 0,
+            otp,
+            expiresAt,
+          },
+        })
+      : await this.prisma.oTP.create({
+          data: {
+            email: existingUser.email,
+            otp,
+            expiresAt,
+            type: 'FORGOT_PASSWORD',
+            attempts: 0,
+          },
+        });
+
+    const fullName =
+      (existingUser.firstName + ' ' + existingUser.lastName).trim() || 'Bạn';
+    // await this.mailService.sendOtp(
+    //   existingUser.email,
+    //   otp,
+    //   fullName,
+    //   'FORGOT_PASSWORD',
+    // );
+    console.log('OTP: ', otp);
+
+    return {
+      message: `Mã OTP đã được gửi đến email ${existingUser.email}. Vui lòng xác thực trong 5 phút.`,
+      email: existingUser.email,
+    };
+  }
+
+  // Đổi mật khẩu
+  async resetPassword(data: ResetPasswordType, deviceInfo: DeviceInfoType) {
+    const { email, password, resetToken } = data;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email,
+        resetPasswordToken: resetToken,
+        resetPasswordExpires: {
+          gt: new Date(), // Phải lớn hơn thời gian hiện tại
+        },
+      },
+    });
+    if (!user)
+      throw new BadRequestException(
+        'Yêu cầu đổi mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng thử lại!',
+      );
+
+    const hashPassword = await this.hashPassword(password);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        hashPassword,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      },
+    });
+
+    await this.prisma.session.deleteMany({
+      where: { userId: user.id },
+    });
+
+    const { accessToken, refreshToken } = await this.generateTokens(
+      user.id,
+      deviceInfo,
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        lastName: user.lastName,
+        firstName: user.firstName,
+        email: user.email,
+        userName: user.userName,
+      },
     };
   }
 }
