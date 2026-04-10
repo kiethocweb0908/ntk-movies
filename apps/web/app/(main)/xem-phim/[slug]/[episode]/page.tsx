@@ -43,7 +43,6 @@ export default async function EpisodePage({
   )
   if (!data.linkM3u8 && !data.linkM3u8)
     return <div className="p-4 text-center">Không tìm thấy link phim</div>
-  console.log(data)
 
   return (
     <div className="relative aspect-video h-full">

@@ -44,7 +44,6 @@ const Page = async ({ searchParams }: PageProps) => {
   if (search) queryObj.search = search
 
   const queryString = new URLSearchParams(queryObj).toString()
-  console.log(queryString)
 
   const {
     data: { meta, movies },

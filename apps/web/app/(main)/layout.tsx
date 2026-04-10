@@ -5,11 +5,11 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import Header from "@/components/layout/header/header"
 import Footer from "@/components/layout/footer"
-import { MainNav } from "@/components/layout/header/main-nav"
 import { api } from "@/lib/api"
 import { CategoryResponse } from "@workspace/shared/schema/category/category.response"
 import { CountryResponse } from "@workspace/shared/schema/country/country.response"
-
+import { Toaster } from "sonner"
+import { cookies } from "next/headers"
 // import { type CategoryType } from "@workspace/shared"
 
 const fontSans = Geist({
@@ -27,12 +27,31 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const getMe = async () => {
+    try {
+      const cookieStore = await cookies()
+      const allCookies = cookieStore.toString()
+      const hasToken =
+        cookieStore.has("accessToken") || cookieStore.has("refreshToken")
+      if (hasToken)
+        return await api<{ user: any; message: string }>("/auth/me", {
+          headers: {
+            Cookie: allCookies,
+          },
+          cache: "no-store",
+        })
+      return null
+    } catch (error) {
+      return null
+    }
+  }
+
   // fetch category và country
-  const [categories, countries] = await Promise.all([
+  const [categories, countries, userData] = await Promise.all([
     api<CategoryResponse[]>("/category"),
     api<CountryResponse[]>("/country"),
+    getMe(),
   ])
-
   return (
     <html
       lang="vi"
@@ -45,9 +64,22 @@ export default async function RootLayout({
       )}
     >
       <body>
-        <Header categories={categories} countries={countries} />
+        <Header
+          categories={categories}
+          countries={countries}
+          user={userData?.user || null}
+        />
         <ThemeProvider>{children}</ThemeProvider>
         <Footer />
+        <Toaster
+          position="bottom-right"
+          duration={3000}
+          richColors
+          expand={true}
+          visibleToasts={7}
+          className="select-none"
+          // closeButton
+        />
       </body>
     </html>
   )

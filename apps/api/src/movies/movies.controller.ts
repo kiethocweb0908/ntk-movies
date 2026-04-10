@@ -5,7 +5,7 @@ import {
   AppResponse,
   EpisodeVideoResponse,
   MovieDetailResponse,
-  MovieMood,
+  MovieResponse,
   MoviesResponse,
   type MovieHomeData,
 } from '@workspace/shared/schema/movie/movie.response';
@@ -31,7 +31,6 @@ export class MoviesController {
 
     return {
       message: 'Thành công!',
-      status: true,
       data: {
         ...data,
         categories,
@@ -42,13 +41,11 @@ export class MoviesController {
   @Get('mood/:moodId')
   async getMoviesByMood(
     @Param() params: MovieMoodParamsDto,
-  ): Promise<MovieMood> {
-    console.log(params.moodId);
+  ): Promise<AppResponse<MovieResponse[]>> {
     const movies = await this.moviesService.getMoviesByMood(params.moodId);
 
     return {
       message: 'Thành công!',
-      status: true,
       data: movies,
     };
   }
@@ -61,7 +58,6 @@ export class MoviesController {
 
     return {
       message: 'Thành công!',
-      status: true,
       data,
     };
   }
@@ -74,7 +70,6 @@ export class MoviesController {
 
     return {
       message: 'Lấy danh sách phim thành công!',
-      status: true,
       data,
     };
   }
@@ -87,7 +82,6 @@ export class MoviesController {
 
     return {
       message: 'Lấy tập phim thành công!',
-      status: true,
       data,
     };
   }
@@ -98,7 +92,6 @@ export class MoviesController {
 
     return {
       message: 'Lấy tập phim thành công!',
-      status: true,
       data,
     };
   }

@@ -25,9 +25,7 @@ export default async function MovieWatchLayout({
   const {
     data: { movie, servers, actors, related },
     message,
-    status,
   } = await api<AppResponse<MovieDetailResponse>>(`/movies/detail/${slug}`)
-  console.log("render")
   const topActors = actors.slice(0, 6)
 
   return (

@@ -14,8 +14,15 @@ export const RegisterSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
       "Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
     ),
-  firstName: z.string(),
-  lastName: z.string(),
+  firstName: z.string().min(1, "Họ không được để trống"),
+  lastName: z.string().min(1, "Tên không được để trống"),
+})
+
+export const RegisterFESchema = RegisterSchema.extend({
+  confirmPassword: z.string().min(1, "Vui lòng xác nhận lại mật khẩu"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Mật khẩu xác nhận không khớp",
+  path: ["confirmPassword"],
 })
 
 export const ResendOTPSchema = z.object({
@@ -61,6 +68,7 @@ export const ResetPasswordSchema = z.object({
 })
 
 export type RegisterType = z.infer<typeof RegisterSchema>
+export type RegisterFEType = z.infer<typeof RegisterFESchema>
 export type VerifyOtpType = z.infer<typeof VerifyOTPSchema>
 export type ResendOtpType = z.infer<typeof ResendOTPSchema>
 export type LoginType = z.infer<typeof LoginSchema>

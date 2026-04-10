@@ -1,6 +1,10 @@
 export interface RegisterResponse {
+  email: string
+  type: string
+}
+
+export interface ResendOTPResponse {
   message: string
-  email?: string
 }
 
 export interface Verify_REGISTER {

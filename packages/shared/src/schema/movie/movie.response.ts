@@ -8,7 +8,7 @@ interface Base {
 
 export interface AppResponse<T> {
   message: string
-  status: boolean
+  // status: boolean
   data: T
 }
 
@@ -81,12 +81,6 @@ export interface MovieHomeData {
   chieurap: MovieResponse[]
   topViewChieurap: MovieResponse[]
   categories: BaseType[]
-}
-
-export interface MovieMood {
-  message: string
-  status: boolean
-  data: MovieResponse[]
 }
 
 export interface EpisodeResponse {

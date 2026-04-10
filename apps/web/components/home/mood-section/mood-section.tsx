@@ -51,7 +51,6 @@ function MoodSection() {
   )
 
   if (error) {
-    console.log(error)
     return
   }
   const movies = data?.data || []

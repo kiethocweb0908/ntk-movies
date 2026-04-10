@@ -21,7 +21,8 @@ import {
   Verify_FORGOT_PASSWORD,
   Verify_REGISTER,
 } from '@workspace/shared/schema/auth/auth.response';
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
+import { AppResponse } from '@workspace/shared/schema/movie/movie.response';
 
 type PENDING_DATA_REGISTER = {
   email: string;
@@ -67,8 +68,9 @@ export class AuthService {
   async comparePassword(hash: string, password: string): Promise<boolean> {
     return await argon2.verify(hash, password);
   }
-  // Tạo token
-  async generateTokens(userId: string, deviceInfo: DeviceInfoType) {
+
+  // Tạo phiên đăng nhập
+  async createSession(userId: string, deviceInfo: DeviceInfoType) {
     const refreshToken = this.randomString();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -81,64 +83,116 @@ export class AuthService {
       },
     });
 
-    const [accessToken] = await Promise.all([
-      this.jwtService.signAsync({ sub: userId }, { expiresIn: '15m' }),
-      existingSessionInGroup
-        ? this.prisma.session.update({
-            where: { id: existingSessionInGroup.id },
-            data: {
-              refreshToken,
-              expiresAt,
-              device: deviceInfo?.device,
-              browser: deviceInfo?.browser,
-              os: deviceInfo?.os,
-              ipAddress: deviceInfo?.ipAddress,
-            },
-          })
-        : this.prisma.session.create({
-            data: {
-              userId,
-              refreshToken,
-              expiresAt,
-              device: deviceInfo?.device,
-              browser: deviceInfo?.browser,
-              os: deviceInfo?.os,
-              ipAddress: deviceInfo?.ipAddress,
-            },
-          }),
-    ]);
-
-    return { accessToken, refreshToken };
+    existingSessionInGroup
+      ? await this.prisma.session.update({
+          where: { id: existingSessionInGroup.id },
+          data: {
+            refreshToken,
+            expiresAt,
+            device: deviceInfo?.device,
+            browser: deviceInfo?.browser,
+            os: deviceInfo?.os,
+            ipAddress: deviceInfo?.ipAddress,
+          },
+        })
+      : await this.prisma.session.create({
+          data: {
+            userId,
+            refreshToken,
+            expiresAt,
+            device: deviceInfo?.device,
+            browser: deviceInfo?.browser,
+            os: deviceInfo?.os,
+            ipAddress: deviceInfo?.ipAddress,
+          },
+        });
+    return refreshToken;
   }
+
+  // tạo accessToken
+  async generateAccessToken(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        role: { select: { slug: true } },
+      },
+    });
+    if (!user)
+      throw new UnauthorizedException(
+        'Không nhận được user ở generateAccessToken',
+      );
+
+    const payload = { sub: userId, email: user.email, role: user.role.slug };
+    return await this.jwtService.signAsync(payload, { expiresIn: '15m' });
+  }
+
   // Chuỗi cho token
   randomString() {
     return crypto.randomBytes(32).toString('hex');
   }
+
   // Set token vào cookie
   setCookies(
     res: Response,
-    tokens: { accessToken: string; refreshToken: string },
+    tokens: { accessToken: string; refreshToken?: string },
   ) {
-    res.cookie('accessToken', tokens.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/',
-      maxAge: 15 * 60 * 1000,
-    });
+    if (tokens?.accessToken) {
+      res.cookie('accessToken', tokens.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        maxAge: 15 * 60 * 1000,
+      });
+    }
 
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    if (tokens?.refreshToken) {
+      res.cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    }
   }
 
-  // clear token
-  clearCookies(res: Response) {
-    const cookieOptions = {
+  //
+  setCookie(res: Response, name: string, value: string, expiresIn?: number) {
+    const options: CookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    };
+
+    if (expiresIn) {
+      options.maxAge = expiresIn;
+    }
+    res.cookie(name, value, options);
+  }
+
+  // clear accessToken và refreshToken token
+  // clearCookies(res: Response) {
+  //   const cookieOptions = {
+  //     httpOnly: true,
+  //     secure: process.env.NODE_ENV === 'production',
+  //     sameSite:
+  //       process.env.NODE_ENV === 'production'
+  //         ? ('none' as const)
+  //         : ('lax' as const),
+  //     path: '/',
+  //     expires: new Date(0),
+  //   };
+
+  //   res.cookie('accessToken', '', cookieOptions);
+  //   res.cookie('refreshToken', '', cookieOptions);
+  // }
+
+  //
+  clearCookies(res: Response, ...names: string[]) {
+    const options: CookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite:
@@ -146,12 +200,14 @@ export class AuthService {
           ? ('none' as const)
           : ('lax' as const),
       path: '/',
-      expires: new Date(0),
     };
 
-    res.cookie('accessToken', '', cookieOptions);
-    res.cookie('refreshToken', '', cookieOptions);
+    // Lặp qua danh sách tên và xóa từng cái
+    names.forEach((name) => {
+      res.clearCookie(name, options);
+    });
   }
+
   // Đăng xuất
   async deleteSession(userId: string, refreshToken: string) {
     await this.prisma.session.deleteMany({
@@ -176,7 +232,7 @@ export class AuthService {
   //============================================================
 
   // Đăng ký -> gửi otp
-  async register(data: RegisterType): Promise<RegisterResponse> {
+  async register(data: RegisterType): Promise<AppResponse<RegisterResponse>> {
     const { email, userName, password, firstName, lastName } = data;
 
     // check
@@ -222,7 +278,8 @@ export class AuthService {
     });
 
     try {
-      await this.mailService.sendOtp(email, otp, `${firstName} ${lastName}`);
+      // await this.mailService.sendOtp(email, otp, `${firstName} ${lastName}`);
+      console.log('OTP: ', otp);
     } catch (error) {
       throw new BadRequestException(
         'Không thể gửi email lúc này, vui lòng thử lại sau',
@@ -231,7 +288,7 @@ export class AuthService {
 
     return {
       message: `Mã OTP đã được gửi đến email ${email}. Vui lòng xác thực trong 5 phút.`,
-      email,
+      data: { email, type: 'REGISTER' },
     };
   }
 
@@ -285,10 +342,11 @@ export class AuthService {
 
       await this.prisma.oTP.delete({ where: { id: otpRecord.id } });
 
-      const { accessToken, refreshToken } = await this.generateTokens(
-        newUser.id,
-        deviceInfo!,
-      );
+      const [accessToken, refreshToken] = await Promise.all([
+        this.generateAccessToken(newUser.id),
+        this.createSession(newUser.id, deviceInfo!),
+      ]);
+
       return {
         accessToken,
         refreshToken,
@@ -331,7 +389,7 @@ export class AuthService {
     const { email, type } = data;
 
     const existingOtp = await this.prisma.oTP.findFirst({
-      where: { AND: { email, type } },
+      where: { AND: { email, type, expiresAt: { gt: new Date() } } },
     });
     if (!existingOtp) throw new NotFoundException('Yêu cầu đã hết hạn!');
 
@@ -365,7 +423,8 @@ export class AuthService {
       ? `${userData.firstName || ''} ${userData.lastName || ''}`.trim()
       : 'Bạn';
 
-    await this.mailService.sendOtp(email, otp, fullName, type);
+    // await this.mailService.sendOtp(email, otp, fullName, type);
+    console.log('otp: ', otp);
     return {
       message: `Mã OTP đã được gửi lại ${email}`,
     };
@@ -464,7 +523,7 @@ export class AuthService {
         email,
         resetPasswordToken: resetToken,
         resetPasswordExpires: {
-          gt: new Date(), // Phải lớn hơn thời gian hiện tại
+          gt: new Date(),
         },
       },
     });
@@ -487,10 +546,10 @@ export class AuthService {
       where: { userId: user.id },
     });
 
-    const { accessToken, refreshToken } = await this.generateTokens(
-      user.id,
-      deviceInfo,
-    );
+    const [accessToken, refreshToken] = await Promise.all([
+      this.generateAccessToken(user.id),
+      this.createSession(user.id, deviceInfo!),
+    ]);
 
     return {
       accessToken,

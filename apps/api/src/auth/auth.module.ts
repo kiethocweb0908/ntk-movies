@@ -7,6 +7,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { MailModule } from '../mail/mail.module';
 import { ConfigService } from '@nestjs/config';
+import { RtGuard } from './guards/rt.guard';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { ConfigService } from '@nestjs/config';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, RtGuard],
 })
 export class AuthModule {}

@@ -54,7 +54,6 @@ export class MailService {
         `,
       });
 
-      console.log('đã gửi mail thành công');
       return data;
     } catch (error) {
       console.error('Lỗi Brevo:', error);
