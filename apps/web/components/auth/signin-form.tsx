@@ -21,10 +21,12 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { api } from "@/lib/api"
+import ButtonLoginGoogle from "./button-login-google"
 
 const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
   const router = useRouter()
   const [isChecked, setIsChecked] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   const form = useForm<LoginType>({
     resolver: zodResolver(LoginSchema),
@@ -42,22 +44,22 @@ const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
   } = form
 
   const onSubmit = async (data: LoginType) => {
-    const SignInReq = async () => {
-      const res = await api<any>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify(data),
-      })
-      return res
-    }
+    if (isRedirecting) return
+    const SignInPromise = api<any>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
 
-    toast.promise(SignInReq(), {
+    toast.promise(SignInPromise, {
       loading: "Đang xử lý...",
       success: (data) => {
+        setIsRedirecting(true)
         router.push("/")
         router.refresh()
         return data.message || "Đăng nhập thành công!"
       },
       error: (err: any) => {
+        setIsRedirecting(false)
         return err.message
       },
     })
@@ -80,6 +82,7 @@ const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
               <Field className="text-white">
                 <FieldLabel htmlFor="identifier">Tài khoản/Email</FieldLabel>
                 <Input
+                  autoComplete="identifier"
                   id="text"
                   placeholder="Tài khoản hoặc email"
                   {...register("identifier")}
@@ -95,6 +98,7 @@ const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
               <Field className="text-white">
                 <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
                 <Input
+                  autoComplete="current-password"
                   id="password"
                   type={!isChecked ? "password" : "text"}
                   {...register("password")}
@@ -133,18 +137,21 @@ const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
               <Field>
                 <Button
                   variant={"filter"}
-                  className="py-2 text-lg"
+                  className="py-2! text-lg"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isRedirecting}
                 >
-                  {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
+                  {isSubmitting || isRedirecting
+                    ? "Đang xử lý..."
+                    : "Đăng nhập"}
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-slate-900">
                 hoặc tiếp tục với
               </FieldSeparator>
-              <Field className="grid grid-cols-3 gap-4">
+              <Field>
                 {/* nút google */}
+                <ButtonLoginGoogle />
               </Field>
               <FieldDescription className="text-center">
                 Bạn chưa có tài khoản? <Link href={"/dang-ky"}>Đăng ký</Link>

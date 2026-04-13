@@ -12,7 +12,8 @@ import {
 
 export default async function Page() {
   const res = await api<AppResponse<MovieHomeData>>("/movies/home", {
-    next: { revalidate: 3600 },
+    // next: { revalidate: 3600 },
+    cache: "no-store",
   })
 
   const {
@@ -25,7 +26,7 @@ export default async function Page() {
     topViewHorror,
     korean,
     usuk,
-  } = res.data
+  } = res.data!
 
   return (
     <div className="min-h-1000 bg-background">

@@ -4,25 +4,36 @@ export async function api<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const headers = {
+  const customHeaders = options.headers || {}
+
+  let serverCookies = ""
+
+  if (typeof window === "undefined") {
+    const { cookies } = await import("next/headers")
+    const cookieStore = await cookies()
+    serverCookies = cookieStore.toString()
+  }
+
+  const mergedHeaders = {
     "Content-Type": "application/json",
-    ...options.headers,
+    ...customHeaders,
+    ...(serverCookies ? { Cookie: serverCookies } : {}),
   }
 
   const res = await fetch(`${API_URL}${endpoint}`, {
     credentials: "include",
     ...options,
-    headers,
+    headers: mergedHeaders,
   })
   const data = await res.json().catch(() => null)
   if (!res.ok) {
-    console.error(`Fetch error at ${endpoint}: ${res.statusText}`)
-    const error: any = new Error(
-      Array.isArray(data?.message)
-        ? data.message[0]
-        : data?.message || `API Error: ${res.status}`
-    )
+    const message = Array.isArray(data?.message)
+      ? data.message[0]
+      : data?.message
+    const error: any = new Error(message || `API Error: ${res.status}`)
     error.status = res.status
+    error.code = message
+    console.error(`Fetch error at ${endpoint}: ${res.statusText}`)
     throw error
   }
 

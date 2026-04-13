@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import {
   DeviceInfoType,
+  GoogleProfileType,
   RegisterType,
   ResendOtpType,
   ResetPasswordType,
@@ -21,7 +22,7 @@ import {
   Verify_FORGOT_PASSWORD,
   Verify_REGISTER,
 } from '@workspace/shared/schema/auth/auth.response';
-import { CookieOptions, Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import { AppResponse } from '@workspace/shared/schema/movie/movie.response';
 
 type PENDING_DATA_REGISTER = {
@@ -49,9 +50,7 @@ export class AuthService {
       include: { role: true },
     });
     if (!user)
-      throw new UnauthorizedException(
-        'Tài khoản hoặc mật khẩu không đúng aaa!',
-      );
+      throw new UnauthorizedException('Tài khoản hoặc mật khẩu không đúng!');
 
     const isMatch = await this.comparePassword(user.hashPassword!, password);
     if (!isMatch)
@@ -124,7 +123,13 @@ export class AuthService {
       );
 
     const payload = { sub: userId, email: user.email, role: user.role.slug };
-    return await this.jwtService.signAsync(payload, { expiresIn: '15m' });
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+    });
+    return {
+      accessToken,
+      payload,
+    };
   }
 
   // Chuỗi cho token
@@ -143,7 +148,8 @@ export class AuthService {
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
-        maxAge: 15 * 60 * 1000,
+        // maxAge: 15 * 60 * 1000,
+        maxAge: 1 * 60 * 1000,
       });
     }
 
@@ -342,7 +348,7 @@ export class AuthService {
 
       await this.prisma.oTP.delete({ where: { id: otpRecord.id } });
 
-      const [accessToken, refreshToken] = await Promise.all([
+      const [{ accessToken }, refreshToken] = await Promise.all([
         this.generateAccessToken(newUser.id),
         this.createSession(newUser.id, deviceInfo!),
       ]);
@@ -529,7 +535,7 @@ export class AuthService {
     });
     if (!user)
       throw new BadRequestException(
-        'Yêu cầu đổi mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng thử lại!',
+        'Yêu cầu đổi mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng tạo yêu cầu mới!',
       );
 
     const hashPassword = await this.hashPassword(password);
@@ -546,7 +552,7 @@ export class AuthService {
       where: { userId: user.id },
     });
 
-    const [accessToken, refreshToken] = await Promise.all([
+    const [{ accessToken }, refreshToken] = await Promise.all([
       this.generateAccessToken(user.id),
       this.createSession(user.id, deviceInfo!),
     ]);
@@ -560,6 +566,110 @@ export class AuthService {
         email: user.email,
         userName: user.userName,
       },
+    };
+  }
+
+  // refresh
+  async handleAuthAndRefresh(req: Request, res: Response) {
+    const accessToken = req.cookies?.['accessToken'];
+    const refreshToken = req.cookies?.['refreshToken'];
+
+    if (accessToken || refreshToken) {
+      if (accessToken) {
+        try {
+          const payload = await this.jwtService.verifyAsync(accessToken, {
+            secret: process.env.JWT_SECRET,
+          });
+
+          return {
+            id: payload.sub,
+            email: payload.email,
+            role: payload.role,
+          };
+        } catch (err) {
+          console.log(
+            'AccessToken hết hạn hoặc không hợp lệ, đang thử refresh...',
+          );
+        }
+      }
+
+      if (refreshToken) {
+        const session = await this.prisma.session.findFirst({
+          where: {
+            refreshToken: refreshToken,
+            expiresAt: { gt: new Date() },
+          },
+        });
+
+        if (!session) {
+          this.clearCookies(res, 'accessToken', 'refreshToken');
+          throw new UnauthorizedException('SESSION_EXPIRED');
+        }
+
+        try {
+          const { payload, accessToken } = await this.generateAccessToken(
+            session.userId,
+          );
+          this.setCookies(res, { accessToken });
+
+          return {
+            id: payload.sub,
+            email: payload.email,
+            role: payload.role,
+          };
+        } catch (e) {
+          throw new UnauthorizedException('Không thể làm mới phiên đăng nhập');
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // Đăng nhập google
+  async loginWithGoogle(
+    googleUser: GoogleProfileType,
+    deviceInfo: DeviceInfoType,
+  ) {
+    const { email, firstName, lastName, picture, googleId, username } =
+      googleUser;
+
+    let user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ googleId: googleId }, { email: email }],
+      },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          userName: username || email,
+          avatarUrl: picture,
+          firstName,
+          lastName,
+          googleId,
+          role: {
+            connect: { slug: 'user' },
+          },
+        },
+      });
+    } else {
+      if (!user.googleId) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { googleId },
+        });
+      }
+    }
+    const [{ accessToken }, refreshToken] = await Promise.all([
+      this.generateAccessToken(user.id),
+      this.createSession(user.id, deviceInfo!),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
     };
   }
 }

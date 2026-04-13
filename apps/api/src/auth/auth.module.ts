@@ -4,10 +4,10 @@ import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
+// import { JwtStrategy } from './strategies/jwt.strategy';
 import { MailModule } from '../mail/mail.module';
 import { ConfigService } from '@nestjs/config';
-import { RtGuard } from './guards/rt.guard';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -24,6 +24,7 @@ import { RtGuard } from './guards/rt.guard';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, RtGuard],
+  providers: [AuthService, LocalStrategy, GoogleStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

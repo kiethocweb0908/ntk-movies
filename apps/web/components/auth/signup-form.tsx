@@ -23,6 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import Image from "next/image"
 import { useState } from "react"
 import { toast } from "sonner"
+import ButtonLoginGoogle from "./button-login-google"
 import { api } from "@/lib/api"
 
 export function SignupForm({
@@ -31,6 +32,7 @@ export function SignupForm({
 }: React.ComponentProps<"div">) {
   const router = useRouter()
   const [isChecked, setIsChecked] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   const form = useForm<RegisterFEType>({
     resolver: zodResolver(RegisterFESchema),
@@ -52,21 +54,21 @@ export function SignupForm({
   } = form
 
   const onSubmit = async (data: RegisterFEType) => {
+    if (isRedirecting) return
     const { confirmPassword, ...dataToSubmit } = data
-    const registerReq = async () => {
-      const res = await api<{ message: string }>("/auth/register", {
-        body: JSON.stringify(dataToSubmit),
-        method: "POST",
-      })
-      return res
-    }
-    toast.promise(registerReq(), {
+    const registerPromise = api<{ message: string }>("/auth/register", {
+      body: JSON.stringify(dataToSubmit),
+      method: "POST",
+    })
+    toast.promise(registerPromise, {
       loading: "Đang xử lý...",
       success: (data) => {
-        router.push("/verify-otp")
+        setIsRedirecting(true)
+        router.push("/xac-thuc-otp")
         return data.message || "Đăng ký thành công!"
       },
       error: (err: any) => {
+        setIsRedirecting(true)
         return err.message
       },
     })
@@ -186,16 +188,17 @@ export function SignupForm({
                   variant={"filter"}
                   className="py-2 text-lg"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isRedirecting}
                 >
-                  {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
+                  {isSubmitting || isSubmitting ? "Đang xử lý..." : "Đăng ký"}
                 </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-slate-900">
                 hoặc tiếp tục với
               </FieldSeparator>
-              <Field className="grid grid-cols-3 gap-4">
+              <Field>
                 {/* nút google */}
+                <ButtonLoginGoogle />
               </Field>
               <FieldDescription className="text-center">
                 Bạn đã có tài khoản? <Link href={"/dang-nhap"}>Đăng nhập</Link>

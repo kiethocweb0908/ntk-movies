@@ -1,19 +1,21 @@
 import z from "zod"
 
+const passwordBase = z
+  .string()
+  .min(6, "Mật khẩu phải ít nhất 6 ký tự")
+  .max(50, "Mật khẩu không được vượt quá 50 ký tự")
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+    "Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
+  )
+
 export const RegisterSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   userName: z
     .string()
     .min(6, "Tên tài khoản phải ít nhất 6 ký tự")
     .max(50, "Tên tài khoản không được vượt quá 50 ký tự"),
-  password: z
-    .string()
-    .min(6, "Mật khẩu phải ít nhất 6 ký tự")
-    .max(50, "Mật khẩu không được vượt quá 50 ký tự")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-      "Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
-    ),
+  password: passwordBase,
   firstName: z.string().min(1, "Họ không được để trống"),
   lastName: z.string().min(1, "Tên không được để trống"),
 })
@@ -43,11 +45,23 @@ export interface DeviceInfoType {
   ipAddress?: string
 }
 
-export const LoginSchema = z.object({
+export interface GoogleProfileType {
+  email: string
+  firstName: string
+  lastName: string
+  picture: string
+  googleId: string
+  username: string | undefined
+}
+
+export const ForgotSchema = z.object({
   identifier: z
     .string()
     .min(6, "Tên tài khoản phải ít nhất 6 ký tự")
     .max(50, "Tên tài khoản không được vượt quá 50 ký tự"),
+})
+
+export const LoginSchema = ForgotSchema.extend({
   password: z
     .string()
     .min(6, "Mật khẩu phải ít nhất 6 ký tự")
@@ -56,15 +70,15 @@ export const LoginSchema = z.object({
 
 export const ResetPasswordSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
-  password: z
-    .string()
-    .min(6, "Mật khẩu phải ít nhất 6 ký tự")
-    .max(50, "Mật khẩu không được vượt quá 50 ký tự")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-      "Mật khẩu phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
-    ),
+  password: passwordBase,
   resetToken: z.string().min(1, "Thấy resetToken"),
+})
+
+export const ResetPasswordFESchema = ResetPasswordSchema.extend({
+  confirmPassword: z.string().min(1, "Vui lòng xác nhận lại mật khẩu"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Mật khẩu xác nhận không khớp",
+  path: ["confirmPassword"],
 })
 
 export type RegisterType = z.infer<typeof RegisterSchema>
@@ -72,4 +86,6 @@ export type RegisterFEType = z.infer<typeof RegisterFESchema>
 export type VerifyOtpType = z.infer<typeof VerifyOTPSchema>
 export type ResendOtpType = z.infer<typeof ResendOTPSchema>
 export type LoginType = z.infer<typeof LoginSchema>
+export type ForgotType = z.infer<typeof ForgotSchema>
 export type ResetPasswordType = z.infer<typeof ResetPasswordSchema>
+export type ResetPasswordFEType = z.infer<typeof ResetPasswordFESchema>

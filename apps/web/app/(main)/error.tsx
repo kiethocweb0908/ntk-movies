@@ -1,26 +1,57 @@
 "use client"
 
+import { clearAuthCookies } from "@/lib/auth-actions"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+
 export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
+  error: Error & { digest?: string; status?: number; code?: string }
   reset: () => void
 }) {
+  const router = useRouter()
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const isSessionExpired = error.message === "SESSION_EXPIRED"
+
+  useEffect(() => {
+    if (isRedirecting) return
+    const processError = async () => {
+      if (isSessionExpired) {
+        setIsRedirecting(true)
+        await clearAuthCookies()
+        toast.error("Phiên đăng nhập của bạn đã hết hạn!")
+        // window.location.href = "/dang-nhap"
+        router.push("/dang-nhap")
+        router.refresh()
+      }
+    }
+    processError()
+  }, [error])
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black p-5 text-center text-white">
-      <h2 className="mb-4 text-2xl font-bold text-red-500">
-        Ối! Server đang bận hoặc bảo trì rồi 😅
+    <div className="flex h-[70vh] flex-col items-center justify-center p-5 text-center">
+      <h2 className="mb-2 text-2xl font-bold text-red-500">
+        {isRedirecting
+          ? "Phiên đăng nhập hết hạn, vui lòng đợi trong giây lát."
+          : "Đã xảy ra lỗi!"}
       </h2>
-      <p className="mb-6 text-gray-400">
-        Đừng lo, bấm nút bên dưới để tải lại trang nhé.
+      <p className="mb-6 text-muted-foreground">
+        {isRedirecting
+          ? "Đang chuyển hướng"
+          : error.message || "Chúng tôi không thể tải dữ liệu lúc này."}
       </p>
-      <button
-        onClick={() => reset()}
-        className="rounded-full bg-yellow-500 px-6 py-2 font-bold text-black transition-all hover:bg-yellow-400"
-      >
-        Thử lại ngay
-      </button>
+
+      {!isRedirecting && (
+        <button
+          onClick={() => reset()}
+          className="rounded-md bg-primary px-4 py-2 text-white hover:opacity-90"
+        >
+          Thử lại
+        </button>
+      )}
     </div>
   )
 }

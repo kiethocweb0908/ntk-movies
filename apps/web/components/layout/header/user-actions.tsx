@@ -18,9 +18,13 @@ import Link from "next/link"
 import { LogOut, Settings, ShieldCheck, User } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useApi } from "@/hooks/use-api"
 
 const UserActions = ({ user }: { user: any | null }) => {
+  const { callApi } = useApi()
   const router = useRouter()
+  const [isAction, setIsAction] = useState(false)
 
   if (!user) {
     return (
@@ -33,26 +37,26 @@ const UserActions = ({ user }: { user: any | null }) => {
   }
 
   const handleLogout = async () => {
-    const logout = async () => {
-      const res = await fetch("/api/logout", {
-        method: "POST",
-      })
-      const result = await res.json()
-      if (!res.ok)
-        throw new Error(result.message || "Đăng xuất không thành công")
+    if (isAction) return
+    const logoutPromise = callApi<{ message: string }>("/auth/logout", {
+      method: "POST",
+    })
 
-      return result
-    }
+    setIsAction(true)
 
-    toast.promise(logout(), {
+    toast.promise(logoutPromise, {
       loading: "Đang xử lý...",
       success: (data) => {
-        router.push("/")
+        setTimeout(() => {
+          setIsAction(false)
+        }, 2000)
+        router.push("/dang-nhap")
         router.refresh()
         return data.message || "Đăng xuất thành công!"
       },
-      error: (err: any) => {
-        return err.message
+      error: (err) => {
+        setIsAction(false)
+        return err.message || "Lỗi khi đăng xuất!"
       },
     })
   }
@@ -66,7 +70,7 @@ const UserActions = ({ user }: { user: any | null }) => {
             {user.firstName || user.userName}
           </span>
           <Avatar className="size-9 border-2 border-yellow-500 transition-transform hover:scale-105">
-            <AvatarImage src={user.avatar} />
+            <AvatarImage src={user.avatarUrl} />
             <AvatarFallback className="bg-slate-800 text-white">
               {user.userName?.charAt(0).toUpperCase()}
             </AvatarFallback>
@@ -113,6 +117,7 @@ const UserActions = ({ user }: { user: any | null }) => {
 
         <DropdownMenuItem
           onClick={handleLogout}
+          disabled={isAction}
           className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-400"
         >
           <LogOut className="mr-2 size-4" />

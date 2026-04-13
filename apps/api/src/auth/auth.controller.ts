@@ -22,14 +22,16 @@ import { type Response, type Request as eRequest } from 'express';
 import { type RequestWithUser } from '../types/auth.type';
 import { GetDeviceInfo } from '../common/decorators/device-info.decorator';
 import { type DeviceInfoType } from '@workspace/shared/schema/auth/auth.dto';
-import { AtGuard } from './guards/jwt-auth.guard';
-import { RtGuard } from './guards/rt.guard';
+import { AtGuard } from '../common/guards/auth.guard';
+import { NoCheckToken } from '../common/decorators/no-check-tonken.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   // Đăng ký -> gửi otp
+  @NoCheckToken()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(
@@ -37,8 +39,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ message: string }> {
     const response = await this.authService.register(body);
-    this.authService.setCookie(res, 'otp_email', response.data.email);
-    this.authService.setCookie(res, 'otp_type', response.data.type);
+    this.authService.setCookie(res, 'otp_email', response.data!.email);
+    this.authService.setCookie(res, 'otp_type', response.data!.type);
     return {
       message: response.message || 'Đăng ký thành công',
     };
@@ -84,6 +86,7 @@ export class AuthController {
   }
 
   // Gửi lại otp
+  @NoCheckToken()
   @Post('resend-otp')
   @HttpCode(HttpStatus.OK)
   async resendOtp(@Body() body: ResendOTPDto) {
@@ -91,6 +94,7 @@ export class AuthController {
   }
 
   // Đăng nhập
+  @NoCheckToken()
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -99,7 +103,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @GetDeviceInfo() deviceInfo: DeviceInfoType,
   ) {
-    const [accessToken, refreshToken] = await Promise.all([
+    const [{ accessToken }, refreshToken] = await Promise.all([
       this.authService.generateAccessToken(req.user.id),
       this.authService.createSession(req.user.id, deviceInfo),
     ]);
@@ -126,7 +130,7 @@ export class AuthController {
       req.user.id,
       req.cookies['refreshToken'],
     );
-    // this.authService.clearCookies(res, 'accessToken', 'refreshToken');
+    this.authService.clearCookies(res, 'accessToken', 'refreshToken');
     return { message: 'Đăng xuất thành công!' };
   }
   // Lấy thông tin
@@ -143,13 +147,14 @@ export class AuthController {
   }
 
   // Quên mật khẩu
+  @NoCheckToken()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(
-    @Body() body: { email: string },
+    @Body() body: { identifier: string },
     @Res({ passthrough: true }) res: Response,
   ) {
-    const response = await this.authService.forgotPassword(body.email);
+    const response = await this.authService.forgotPassword(body.identifier);
     this.authService.setCookie(res, 'otp_email', response.email);
     this.authService.setCookie(res, 'otp_type', 'FORGOT_PASSWORD');
 
@@ -158,6 +163,7 @@ export class AuthController {
     };
   }
   // Đổi mật khẩu
+  @NoCheckToken()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(
@@ -182,17 +188,25 @@ export class AuthController {
     };
   }
 
-  @Post('refresh')
-  @UseGuards(RtGuard)
-  async refresh(
-    @Req() req: RequestWithUser,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const accessToken = await this.authService.generateAccessToken(req.user.id);
-    this.authService.setCookies(res, { accessToken });
+  //
+  @NoCheckToken()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() req) {}
 
-    return {
-      message: 'Làm mới phiên đăng nhập thành công!',
-    };
+  @NoCheckToken()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+    @GetDeviceInfo() deviceInfo: DeviceInfoType,
+  ) {
+    const googleUser = req.user;
+    const { accessToken, refreshToken } =
+      await this.authService.loginWithGoogle(googleUser, deviceInfo);
+
+    this.authService.setCookies(res, { accessToken, refreshToken });
+    return res.redirect(process.env.FRONTEND_API as string);
   }
 }

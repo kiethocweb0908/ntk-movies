@@ -8,6 +8,8 @@ import { CountryModule } from './country/country.module';
 import { MoviesModule } from './movies/movies.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AppAuthGuard } from './common/guards/app-at.guard';
 
 @Module({
   imports: [
@@ -23,6 +25,12 @@ import { MailModule } from './mail/mail.module';
     MailModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AppAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

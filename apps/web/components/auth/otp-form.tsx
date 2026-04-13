@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
 import { ResendOTPResponse } from "@workspace/shared/schema/auth/auth.response"
+import { useApi } from "@/hooks/use-api"
 
 interface OtpFormProps {
   className?: string
@@ -32,6 +33,7 @@ const OtpForm = ({
   className,
   ...props
 }: OtpFormProps) => {
+  const { callApi } = useApi()
   const router = useRouter()
   const [otp, setOtp] = useState("")
   const [countdown, setCountdown] = useState(0)
@@ -50,22 +52,19 @@ const OtpForm = ({
     if (otp.length !== 6) return toast.error("Vui lòng nhập đủ 6 số")
 
     setLoading(true)
-    const verifyReq = async () => {
-      const res = await api<{ message: string }>("/auth/verify-otp", {
-        method: "POST",
-        body: JSON.stringify({ email, type, otp }),
-      })
-      return res
-    }
+    const verifyPromise = callApi<{ message: string }>("/auth/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, type, otp }),
+    })
 
-    toast.promise(verifyReq(), {
+    toast.promise(verifyPromise, {
       loading: "Đang xác minh...",
       success: (data) => {
         setTimeout(() => {
           setLoading(false)
         }, 300)
         if (type === "FORGOT_PASSWORD") {
-          router.push("/quen-mat-khau")
+          router.push("/khoi-phuc-mat-khau")
         } else {
           router.push("/")
           router.refresh()

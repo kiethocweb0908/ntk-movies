@@ -10,7 +10,6 @@ import { CategoryResponse } from "@workspace/shared/schema/category/category.res
 import { CountryResponse } from "@workspace/shared/schema/country/country.response"
 import { Toaster } from "sonner"
 import { cookies } from "next/headers"
-// import { type CategoryType } from "@workspace/shared"
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -28,22 +27,18 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const getMe = async () => {
-    try {
-      const cookieStore = await cookies()
-      const allCookies = cookieStore.toString()
-      const hasToken =
-        cookieStore.has("accessToken") || cookieStore.has("refreshToken")
-      if (hasToken)
-        return await api<{ user: any; message: string }>("/auth/me", {
-          headers: {
-            Cookie: allCookies,
-          },
-          cache: "no-store",
-        })
-      return null
-    } catch (error) {
-      return null
-    }
+    const cookieStore = await cookies()
+    const allCookies = cookieStore.toString()
+    const hasToken =
+      cookieStore.has("accessToken") || cookieStore.has("refreshToken")
+    if (hasToken)
+      return await api<{ user: any; message: string }>("/auth/me", {
+        headers: {
+          Cookie: allCookies,
+        },
+        cache: "no-store",
+      })
+    return null
   }
 
   // fetch category và country

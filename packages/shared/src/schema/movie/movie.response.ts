@@ -9,7 +9,7 @@ interface Base {
 export interface AppResponse<T> {
   message: string
   // status: boolean
-  data: T
+  data?: T
 }
 
 export interface MovieResponse {

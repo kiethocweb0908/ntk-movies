@@ -7,7 +7,7 @@ const LoginPage = async () => {
   const accessToken = cookieStore.get("accessToken")?.value
   const refreshToken = cookieStore.get("refreshToken")?.value
 
-  if (accessToken || refreshToken) redirect("/")
+  if (accessToken && refreshToken) redirect("/")
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center px-5 pt-28">
