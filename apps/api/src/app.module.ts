@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AppAuthGuard } from './common/guards/app-at.guard';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AppAuthGuard } from './common/guards/app-at.guard';
     MoviesModule,
     AuthModule,
     MailModule,
+    ChatbotModule,
   ],
   controllers: [AppController],
   providers: [

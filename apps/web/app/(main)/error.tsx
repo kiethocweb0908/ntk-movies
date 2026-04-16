@@ -15,6 +15,7 @@ export default function Error({
   const router = useRouter()
   const [isRedirecting, setIsRedirecting] = useState(false)
   const isSessionExpired = error.message === "SESSION_EXPIRED"
+  const isBackendDown = error.message === "BACKEND_UNAVAILABLE"
 
   useEffect(() => {
     if (isRedirecting) return
@@ -31,22 +32,28 @@ export default function Error({
     processError()
   }, [error])
 
+  const resett = () => {
+    router.refresh()
+  }
+
   return (
     <div className="flex h-[70vh] flex-col items-center justify-center p-5 text-center">
       <h2 className="mb-2 text-2xl font-bold text-red-500">
-        {isRedirecting
+        {isSessionExpired
           ? "Phiên đăng nhập hết hạn, vui lòng đợi trong giây lát."
-          : "Đã xảy ra lỗi!"}
+          : isBackendDown
+            ? "Server đang bảo trì hoặc chưa khởi động"
+            : "Đã xảy ra lỗi!"}
       </h2>
       <p className="mb-6 text-muted-foreground">
-        {isRedirecting
+        {isSessionExpired
           ? "Đang chuyển hướng"
           : error.message || "Chúng tôi không thể tải dữ liệu lúc này."}
       </p>
 
       {!isRedirecting && (
         <button
-          onClick={() => reset()}
+          onClick={() => resett()}
           className="rounded-md bg-primary px-4 py-2 text-white hover:opacity-90"
         >
           Thử lại

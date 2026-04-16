@@ -10,6 +10,7 @@ import { CategoryResponse } from "@workspace/shared/schema/category/category.res
 import { CountryResponse } from "@workspace/shared/schema/country/country.response"
 import { Toaster } from "sonner"
 import { cookies } from "next/headers"
+import { ChatbotFloating } from "@/components/chatbot/chatbot-floating"
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -43,9 +44,9 @@ export default async function RootLayout({
 
   // fetch category và country
   const [categories, countries, userData] = await Promise.all([
-    api<CategoryResponse[]>("/category"),
-    api<CountryResponse[]>("/country"),
-    getMe(),
+    api<CategoryResponse[]>("/category").catch(() => []),
+    api<CountryResponse[]>("/country").catch(() => []),
+    getMe().catch(() => null),
   ])
   return (
     <html
@@ -66,6 +67,7 @@ export default async function RootLayout({
         />
         <ThemeProvider>{children}</ThemeProvider>
         <Footer />
+        <ChatbotFloating />
         <Toaster
           position="bottom-right"
           duration={3000}

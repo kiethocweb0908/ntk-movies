@@ -2,7 +2,8 @@ import { Button } from "@workspace/ui/components/button"
 
 const ButtonLoginGoogle = () => {
   const handleLoginGoogle = () => {
-    window.location.href = "http://localhost:8000/api/auth/google"
+    console.log("BACKEND_API: ", process.env.NEXT_PUBLIC_BACKEND_API)
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_API}/auth/google`
   }
 
   return (

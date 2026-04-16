@@ -12,8 +12,8 @@ import {
 
 export default async function Page() {
   const res = await api<AppResponse<MovieHomeData>>("/movies/home", {
-    // next: { revalidate: 3600 },
-    cache: "no-store",
+    next: { revalidate: 3600 },
+    // cache: "no-store",
   })
 
   const {

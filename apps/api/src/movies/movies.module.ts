@@ -7,5 +7,6 @@ import { CategoryModule } from '../category/category.module';
   imports: [CategoryModule],
   controllers: [MoviesController],
   providers: [MoviesService],
+  exports: [MoviesService],
 })
 export class MoviesModule {}

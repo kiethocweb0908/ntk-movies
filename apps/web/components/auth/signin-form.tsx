@@ -45,6 +45,7 @@ const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
 
   const onSubmit = async (data: LoginType) => {
     if (isRedirecting) return
+
     const SignInPromise = api<any>("/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
@@ -83,7 +84,8 @@ const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
                 <FieldLabel htmlFor="identifier">Tài khoản/Email</FieldLabel>
                 <Input
                   autoComplete="identifier"
-                  id="text"
+                  id="identifier"
+                  type="text"
                   placeholder="Tài khoản hoặc email"
                   {...register("identifier")}
                 />

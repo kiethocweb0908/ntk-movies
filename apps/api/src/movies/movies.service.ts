@@ -17,7 +17,7 @@ import {
 export class MoviesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private select = {
+  select = {
     id: true,
     name: true,
     originName: true,
@@ -58,7 +58,7 @@ export class MoviesService {
     },
   };
 
-  private formatMovie(movies) {
+  formatMovie(movies) {
     return movies.map((movie) => ({
       ...movie,
       categories: movie.categories.map((c) => c.category),

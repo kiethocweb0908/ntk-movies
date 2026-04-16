@@ -41,11 +41,11 @@ export default function SearchBar({
 
       setLoading(true)
       try {
-        const {
-          data: { movies },
-        } = await api<AppResponse<MoviesResponse>>(
+        const res = await api<AppResponse<MoviesResponse>>(
           `/movies?search=${debouncedQuery}&limit=5`
         )
+        const movies = res.data!.movies
+
         setResults(movies)
         setIsOpen(true)
       } catch (error) {
