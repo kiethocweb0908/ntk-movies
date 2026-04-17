@@ -22,15 +22,15 @@ const ChatbotWindowInput = memo(
     loading,
   }: ChatbotWindowInputProps) => {
     return (
-      <div className="flex items-center justify-between gap-2 border-t bg-slate-900 p-3">
+      <div className="flex items-center justify-between gap-2 rounded-b-xl border-t border-primary/50 bg-slate-900 p-3">
         <Textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyPress}
-          maxLength={50}
+          maxLength={200}
           rows={1}
           placeholder="Nhập câu hỏi cho trợ lý AI"
-          className="w-full border-primary/40 bg-transparent text-sm text-primary outline-none"
+          className="custom-scrollbar max-h-5 w-full overflow-y-auto border-primary/50 bg-transparent text-sm text-primary outline-none"
         />
         <Button
           onClick={handleSend}

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { GoogleGenAI } from '@google/genai';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  ChatBotType,
   IntentSchema,
   IntentType,
 } from '@workspace/shared/schema/chatbot/chatbot.dto';
@@ -9,6 +10,7 @@ import { ChatbotResponse } from '@workspace/shared/schema/chatbot/chatbot.respon
 import { Prisma } from '@prisma/client';
 import { MoviesService } from '../movies/movies.service';
 import { MovieResponse } from '@workspace/shared/schema/movie/movie.response';
+import slugify from 'slugify';
 
 @Injectable()
 export class ChatbotService {
@@ -22,32 +24,46 @@ export class ChatbotService {
   }
 
   // Phân tích câu hỏi của user thành dữ liệu có cấu trúc
-  private async getStructuredIntent(message: string): Promise<IntentType> {
+  private async getStructuredIntent({
+    message,
+    history,
+  }: ChatBotType): Promise<IntentType> {
     console.log('Đã vào phân tích');
     try {
       const res = await this.ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: `
-        Bối cảnh: Bạn là AI điều hướng cho web "NTK Phim".
-              Nhiệm vụ: Phân tích câu hỏi của người dùng để trích xuất ý định tìm kiếm phim.
-              
-              QUY TẮC BẮT BUỘC:
-              1. Nếu người dùng yêu cầu tìm phim, gợi ý phim, hoặc hỏi về bất kỳ thể loại/quốc gia/năm nào (Vd: "tìm phim Hàn", "phim tình cảm", "phim hành động Mỹ"), bạn PHẢI trả về intent: "movie_search".
-              2. Nếu là chào hỏi xã giao hoặc hỏi những thứ không liên quan đến tìm phim, trả về intent: "normal_chat".
-              3. Đối với "keyword", hãy trích xuất tên phim hoặc từ khóa chính. Nếu người dùng hỏi chung chung về thể loại, hãy để keyword là null và điền vào các trường genre, country...
-
-        Phân tích câu người dùng  và trả về JSON theo format:
-
-        {
-        "intent": "movie_search" | "normal_chat",
-        "keyword": string,
-        "genre": string,
-        "country": string,
-        "year": number,
-        "type": "single" | "series" | "hoathinh"
-        }
-        Chỉ trả về JSON, không giải thích.
-        Message: "${message}" `,
+        model: 'gemini-3.1-flash-lite-preview',
+        contents: ` Bạn là AI điều hướng cho web NTK Phim. 
+        Lịch sử trò chuyện: ${JSON.stringify(history)} 
+        Tin nhắn mới: "${message}" 
+        Nhiệm vụ: 
+        - Xác định người dùng đang chat bình thường hay tìm phim 
+        - Sửa lỗi chính tả 
+        - Chuẩn hóa tên phim 
+        - Chuẩn hóa thể loại 
+        - Chuẩn hóa quốc gia 
+        - Xác định mood hoặc theme nếu có 
+        - Nếu người dùng hỏi top phim, trending phim, phim nổi bật, phim hay nhất thì đặt isTopQuery = true 
+        Ví dụ: 
+        "hành đọng mỹ" -> normalizedGenre: "hành động" 
+        "ha canh noi anh" -> normalizedKeyword: "Hạ Cánh Nơi Anh" 
+        "hôm nay tui buồn" -> mood: "buồn" 
+        "phim sinh tồn" -> theme: "sinh tồn" 
+        "top phim hàn quốc" -> isTopQuery: true 
+        Chỉ trả JSON đúng format: 
+        { 
+          "intent": "movie_search" | "normal_chat", 
+          "keyword": string | null, 
+          "normalizedKeyword": string | null, 
+          "genre": string | null, 
+          "normalizedGenre": string | null, 
+          "country": string | null, 
+          "normalizedCountry": string | null, 
+          "mood": string | null, 
+          "theme": string | null, 
+          "year": number | null, 
+          "type": "single" | "series" | "hoathinh" | null, 
+          "isTopQuery": boolean 
+          } `,
         config: { responseMimeType: 'application/json' },
       });
 
@@ -66,34 +82,108 @@ export class ChatbotService {
     }
   }
 
+  private readonly moodMap: Record<string, string[]> = {
+    buon: ['Tình Cảm', 'Gia Đình', 'Chữa Lành'],
+    co_don: ['Tâm Lý', 'Chữa Lành'],
+    vui: ['Hài Hước', 'Phiêu Lưu'],
+    hoi_hop: ['Hành Động', 'Kinh Dị', 'Trinh Thám'],
+  };
+
+  private readonly themeMap: Record<string, string[]> = {
+    sinh_ton: ['survival', 'zombie', 'thảm họa', 'hậu tận thế', 'đảo hoang'],
+    hoc_duong: ['school', 'Học Đường', 'Thanh Xuân'],
+    chua_lanh: ['healing', 'Gia Đình', 'Tâm Lý'],
+  };
+
   // Điều kiện truy vấn
   private async buildMovieQuery(intent: IntentType) {
     const where: Prisma.MovieWhereInput = { published: true };
 
-    if (intent.keyword) {
+    const keyword = intent.normalizedKeyword || intent.keyword || '';
+    const genre = intent.normalizedGenre || intent.genre || undefined;
+    const country = intent.normalizedCountry || intent.country || undefined;
+
+    if (keyword) {
+      const slugKeyword = slugify(keyword, {
+        lower: true,
+        strict: true,
+        locale: 'vi',
+      });
+
       where.OR = [
-        { name: { contains: intent.keyword, mode: 'insensitive' } },
-        { originName: { contains: intent.keyword, mode: 'insensitive' } },
-        { content: { contains: intent.keyword, mode: 'insensitive' } },
+        { name: { contains: keyword, mode: 'insensitive' } },
+        { slug: { contains: slugKeyword, mode: 'insensitive' } },
+        { originName: { contains: keyword, mode: 'insensitive' } },
+        { alternativeNames: { hasSome: [keyword] } },
+        { content: { contains: keyword, mode: 'insensitive' } },
       ];
     }
     if (intent.type) where.type = intent.type;
     if (intent.year) where.year = intent.year;
 
-    // Query quan hệ n-n (Category và Country)
-    if (intent.genre) {
+    if (genre) {
+      const slugGenre = slugify(genre, {
+        lower: true,
+        strict: true,
+        locale: 'vi',
+      });
       where.categories = {
         some: {
-          category: { name: { contains: intent.genre, mode: 'insensitive' } },
+          category: {
+            OR: [
+              { name: { contains: genre, mode: 'insensitive' } },
+              { slug: { contains: slugGenre, mode: 'insensitive' } },
+            ],
+          },
         },
       };
     }
-    if (intent.country) {
+    if (country) {
+      const slugCountry = slugify(country, {
+        lower: true,
+        strict: true,
+        locale: 'vi',
+      });
       where.countries = {
         some: {
-          country: { name: { contains: intent.country, mode: 'insensitive' } },
+          country: {
+            OR: [
+              { name: { contains: country, mode: 'insensitive' } },
+              { slug: { contains: slugCountry, mode: 'insensitive' } },
+            ],
+          },
         },
       };
+    }
+
+    const andConditions: Prisma.MovieWhereInput[] = [];
+    if (intent.theme) {
+      const themeKey = slugify(intent.theme, { lower: true, replacement: '_' });
+      const themeKeywords = this.themeMap[themeKey] || [];
+      if (themeKeywords.length > 0) {
+        andConditions.push({
+          OR: themeKeywords.map((k) => ({
+            OR: [
+              { name: { contains: k, mode: 'insensitive' } },
+              { content: { contains: k, mode: 'insensitive' } },
+            ],
+          })),
+        });
+      }
+    }
+
+    if (intent.mood) {
+      const moodKey = slugify(intent.mood, { lower: true, replacement: '_' });
+      const mappedGenres = this.moodMap[moodKey] || [];
+      if (mappedGenres.length > 0) {
+        andConditions.push({
+          categories: { some: { category: { name: { in: mappedGenres } } } },
+        });
+      }
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     return where;
@@ -103,12 +193,18 @@ export class ChatbotService {
   private async searchMovie(intent: IntentType): Promise<MovieResponse[]> {
     const where = await this.buildMovieQuery(intent);
 
+    const orderBy: Prisma.MovieOrderByWithRelationInput[] = intent.isTopQuery
+      ? [
+          { viewCount: 'desc' },
+          { imdb_vote_average: 'desc' },
+          { tmdb_vote_average: 'desc' },
+        ]
+      : [{ viewCount: 'desc' }];
+
     const movies = await this.prisma.movie.findMany({
       where,
       take: 5,
-      orderBy: {
-        viewCount: 'desc',
-      },
+      orderBy,
       select: this.moviesService.select,
     });
 
@@ -117,16 +213,20 @@ export class ChatbotService {
   }
 
   // Format response AI
-  private async formatMovieText(movies: MovieResponse[]) {
+  private async formatMovieText(movies: MovieResponse[], intent: IntentType) {
     try {
       const res = await this.ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.5-flash',
         contents: `
         Dựa vào danh sách phim sau, hãy viết lời gợi ý tự nhiên:
-
         ${JSON.stringify(movies.slice(0, 5))}
 
-        Ngắn gọn nhất có thể, thân thiện. `,
+        Các dữ liệu từ khoá đã có:
+         ${JSON.stringify(intent)}
+
+        Ngắn gọn nhất có thể, thân thiện. 
+        không cần liệt kê các tên phim, chỉ cần bảo tui tìm được các phim theo yêu cầu của bạn. 
+        Hỏi thêm người dùng các từ khoá như quốc gia, thể loại,.. (các trường mà chưa có á) để tìm chính xác hơn `,
       });
 
       return res.text;
@@ -139,9 +239,10 @@ export class ChatbotService {
   private async normalChat(message: string) {
     try {
       const res = await this.ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.5-flash',
         contents: `
         Bạn là trợ lý cho trang web xem phim trực tuyến NTK Phim.
+        Hãy trò truyện với người dùng lịch sự thân thiện, trả lời ngắn gọn thôi.
         Message: ${message}`,
       });
 
@@ -152,8 +253,11 @@ export class ChatbotService {
   }
 
   // Hàm xử lý chính
-  async handleChat(message: string): Promise<ChatbotResponse> {
-    const intent = await this.getStructuredIntent(message);
+  async handleChat({
+    message,
+    history,
+  }: ChatBotType): Promise<ChatbotResponse> {
+    const intent = await this.getStructuredIntent({ message, history });
     console.log('intent: ', intent);
 
     // Tìm phim
@@ -168,7 +272,7 @@ export class ChatbotService {
         };
       }
 
-      const text = await this.formatMovieText(movies);
+      const text = await this.formatMovieText(movies, intent);
 
       return {
         type: 'movie',

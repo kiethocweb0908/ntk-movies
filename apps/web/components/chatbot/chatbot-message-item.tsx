@@ -25,7 +25,7 @@ const ChatbotMessageItem = ({ msg }: ChatbotMessageItemprops) => {
         {msg.movies && msg.movies.length > 0 && (
           <div className="mt-2 flex flex-col gap-2">
             {msg.movies.map((movie) => (
-              <Link href={`${Movie_URL}/${movie.slug}`}>
+              <Link key={movie.slug} href={`${Movie_URL}/${movie.slug}`}>
                 <MovieCard movie={movie} isHorizontal={true} />
               </Link>
             ))}

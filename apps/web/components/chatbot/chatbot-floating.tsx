@@ -19,7 +19,7 @@ export function ChatbotFloating() {
         <PopoverTrigger asChild>
           <Button
             size="icon"
-            className="h-14 w-14 rounded-full bg-yellow-400 shadow-lg transition-transform hover:scale-110 hover:bg-textHover"
+            className="h-14 w-14 rounded-full bg-yellow-400 shadow-lg transition-transform hover:scale-105 hover:bg-textHover"
           >
             {isOpen ? (
               <X className="h-6 w-6" />
@@ -32,7 +32,7 @@ export function ChatbotFloating() {
         <PopoverContent
           side="top"
           align="end"
-          className="mb-4 h-125 w-95 border-muted bg-slate-900 p-0 shadow-2xl"
+          className="mb-25 ml-3 h-125 w-95 border-muted bg-slate-900 p-0 shadow-2xl sm:mr-15 sm:mb-0 sm:ml-0"
         >
           <ChatbotWindow />
         </PopoverContent>

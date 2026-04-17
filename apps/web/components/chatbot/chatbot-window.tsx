@@ -41,6 +41,11 @@ const ChatbotWindow = () => {
       message: messageContent,
     }
 
+    const historyPayload = messages.slice(-5).map((msg) => ({
+      role: msg.isBot ? "model" : ("user" as "model" | "user"),
+      parts: [{ text: msg.message }],
+    }))
+
     setMessages((prev) => [...prev, userMessage])
     setValue("")
     setIsLoading(true)
@@ -48,7 +53,10 @@ const ChatbotWindow = () => {
     try {
       const res = await api<ChatbotResponse>("/chatbot", {
         method: "POST",
-        body: JSON.stringify({ message: messageContent }),
+        body: JSON.stringify({
+          message: messageContent,
+          history: historyPayload,
+        }),
       })
 
       const botMessage: Messages = {

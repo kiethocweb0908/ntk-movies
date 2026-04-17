@@ -35,7 +35,7 @@ export const MovieCard = ({
           <span className="line-clamp-1 text-sm font-medium text-white group-hover:text-textHover">
             {movie.name}
           </span>
-          <span className="text-xs text-primary/80 group-hover:text-textHover/60">
+          <span className="line-clamp-2 text-xs text-balance text-primary/80 group-hover:text-textHover/60">
             {movie.originName}
           </span>
         </div>

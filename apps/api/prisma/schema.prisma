@@ -164,7 +164,7 @@ model Movie {
   // episodes       Episode[]
   comments       Comment[]
   favorites      Favorite[]
-  history        History[]
+ 
   actors         MovieActor[]
   categories     MovieCategory[]
   countries      MovieCountry[]
@@ -243,6 +243,7 @@ model Episode {
   updatedAt  DateTime     @updatedAt
   server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
+   history        History[]
   @@unique([serverId, slug])
   @@index([serverId, slug])
 }
@@ -258,13 +259,20 @@ model Favorite {
 
 model History {
   userId    String   @db.Uuid
-  movieId   String   @db.Uuid
-  time      String?
+  episodeId String   @db.Uuid
+
+  currentTime Int    @default(0)
+  duration    Int    @default(0)
+
+  isCompleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  episode     Episode    @relation(fields: [episodeId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([userId, movieId])
+  @@id([userId, episodeId])
 }
 
 model Comment {

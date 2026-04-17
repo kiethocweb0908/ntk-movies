@@ -10,6 +10,6 @@ export class ChatbotController {
   @NoCheckToken()
   @Post()
   async chat(@Body() body: ChatBotDto) {
-    return this.chatbotService.handleChat(body.message);
+    return this.chatbotService.handleChat(body);
   }
 }
