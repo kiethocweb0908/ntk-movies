@@ -165,34 +165,102 @@ export class MoviesService {
   // Các phim liên quan
   private async getRelatedMovies(
     currentId: string,
+    slug: string,
+    oriName: string | null,
+    name: string,
     categoryIds: string[],
     countryIds: string[],
-    actorIds: string[],
   ) {
-    const movies = await this.prisma.movie.findMany({
-      where: {
+    const kwSlug = this.getRootKeyword(slug.replace(/-/g, ' ')).replace(
+      /\s+/g,
+      '-',
+    );
+    const kwOri = this.getRootKeyword(oriName || '');
+    const kwName = this.getRootKeyword(name);
+
+    const specialKeywords = [
+      'chien-doi',
+      'chien-binh',
+      'sieu-nhan',
+      'hiep-si-mat-na',
+      'kamen-rider',
+    ];
+    const isSpecial = specialKeywords.some((sk) =>
+      kwSlug.toLowerCase().includes(sk),
+    );
+
+    let nameFilter: Prisma.MovieWhereInput;
+
+    if (isSpecial) {
+      nameFilter = {
         OR: [
-          {
-            actors: {
-              some: { actorId: { in: actorIds } },
-            },
-          },
+          { originName: { contains: kwOri, mode: 'insensitive' } },
           {
             AND: [
-              { categories: { some: { categoryId: { in: categoryIds } } } },
-              { countries: { some: { countryId: { in: countryIds } } } },
+              { slug: { contains: kwSlug, mode: 'insensitive' } },
+              { name: { contains: kwName, mode: 'insensitive' } },
             ],
           },
         ],
+      };
+    } else {
+      nameFilter = kwOri
+        ? { originName: { contains: kwOri, mode: 'insensitive' } }
+        : { slug: { contains: kwSlug, mode: 'insensitive' } };
+    }
+
+    const similarNameMovies = await this.prisma.movie.findMany({
+      where: {
         id: { not: currentId },
         published: true,
+        ...nameFilter,
       },
       take: 12,
       orderBy: [{ updatedAt: 'desc' }, { viewCount: 'desc' }],
       select: this.select,
     });
 
-    return this.formatMovie(movies);
+    if (similarNameMovies.length === 12) {
+      return this.formatMovie(similarNameMovies);
+    }
+
+    const similarIds = similarNameMovies.map((m) => m.id);
+    const categoryMovies = await this.prisma.movie.findMany({
+      where: {
+        id: { notIn: [currentId, ...similarIds] },
+        published: true,
+        AND: [
+          { categories: { some: { categoryId: { in: categoryIds } } } },
+          { countries: { some: { countryId: { in: countryIds } } } },
+        ],
+      },
+      take: 12 - similarNameMovies.length,
+      orderBy: [{ updatedAt: 'desc' }, { viewCount: 'desc' }],
+      select: this.select,
+    });
+
+    return this.formatMovie([...similarNameMovies, ...categoryMovies]);
+  }
+
+  // trích xuất từ khoá
+  private getRootKeyword(input: string): string {
+    if (!input) return '';
+
+    const regex = /[:\(\[|]|(\s+season\s+)|(\s+phần\s+)/i;
+
+    const hasSpecialChar = regex.test(input);
+
+    if (hasSpecialChar) {
+      const parts = input.split(regex);
+      return parts[0].trim();
+    }
+
+    const words = input.trim().split(/\s+/);
+    if (words.length > 2) {
+      return words.slice(0, 2).join(' ');
+    }
+
+    return input.trim();
   }
 
   //---------------------------------------------
@@ -423,9 +491,11 @@ export class MoviesService {
       this.getServersByMovieId(movie.id),
       this.getRelatedMovies(
         formatedMovie.id,
+        formatedMovie.slug,
+        formatedMovie.originName,
+        formatedMovie.name,
         categoryIds,
         countryIds,
-        actorIds,
       ),
     ]);
 
