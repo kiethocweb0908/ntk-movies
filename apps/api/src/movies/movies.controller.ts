@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Request } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CategoryService } from '../category/category.service';
 import {
@@ -14,6 +14,7 @@ import {
   MovieMoodParamsDto,
   MovieQueryDto,
 } from './dto/movie-query.dto';
+import { type RequestWithUser } from '../types/auth.type';
 
 @Controller('movies')
 export class MoviesController {
@@ -76,9 +77,10 @@ export class MoviesController {
 
   @Get('episode')
   async getEpisode(
+    @Request() req: RequestWithUser,
     @Query() query: MovieEpisodeDto,
   ): Promise<AppResponse<EpisodeVideoResponse>> {
-    const data = await this.moviesService.getEpisode(query);
+    const data = await this.moviesService.getEpisode(query, req?.user?.id);
 
     return {
       message: 'Lấy tập phim thành công!',

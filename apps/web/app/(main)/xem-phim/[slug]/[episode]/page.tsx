@@ -5,6 +5,7 @@ import {
   EpisodeVideoResponse,
 } from "@workspace/shared/schema/movie/movie.response"
 import { getYoutubeEmbedUrl } from "@workspace/ui/lib/utils"
+import { cookies } from "next/headers"
 
 export default async function EpisodePage({
   params,
@@ -29,6 +30,10 @@ export default async function EpisodePage({
     )
   }
 
+  const cookieStore = await cookies()
+  const accessToken = cookieStore.get("accessToken")?.value
+  const refreshToken = cookieStore.get("refreshToken")?.value
+
   const [{ slug, episode }, sParams] = await Promise.all([params, searchParams])
   const serverId = sParams.server
 
@@ -38,18 +43,21 @@ export default async function EpisodePage({
     ...(serverId && { serverId }),
   })
 
-  const { data } = await api<AppResponse<EpisodeVideoResponse>>(
+  const res = await api<AppResponse<EpisodeVideoResponse>>(
     `/movies/episode?${query.toString()}`
   )
+  const data = res.data!
+  console.log("episode: ", data)
   if (!data.linkM3u8 && !data.linkM3u8)
     return <div className="p-4 text-center">Không tìm thấy link phim</div>
 
   return (
-    <div className="relative aspect-video h-full">
-      <VideoPlayer
-        url={data.linkM3u8 || data.linkEmbed!}
-        title={"Tập " + data.name || ""}
-      />
-    </div>
+    <VideoPlayer
+      url={data.linkM3u8 || data.linkEmbed!}
+      title={"Tập " + data.name || ""}
+      episodeId={data.id}
+      history={data.history}
+      isLoggedIn={!!accessToken || !!refreshToken}
+    />
   )
 }

@@ -42,7 +42,7 @@ export default function SearchBar({
       setLoading(true)
       try {
         const res = await api<AppResponse<MoviesResponse>>(
-          `/movies?search=${debouncedQuery}&limit=5`
+          `/movies?search=${debouncedQuery.trim()}&limit=5`
         )
         const movies = res.data!.movies
 

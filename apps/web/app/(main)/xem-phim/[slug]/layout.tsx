@@ -32,7 +32,7 @@ export default async function MovieWatchLayout({
     <div className="mx-auto min-h-screen px-5 pt-40 pb-5 text-white">
       <TitleSection title={movie.name} />
       {/* 1. Vùng Video Player (Thay đổi theo tập) */}
-      <div className="mb-10 aspect-video w-full overflow-hidden rounded-xl bg-background shadow-2xl">
+      <div className="mb-6 aspect-video w-full overflow-hidden rounded-lg bg-background shadow-2xl md:mb-10 md:rounded-xl">
         {children}
       </div>
 

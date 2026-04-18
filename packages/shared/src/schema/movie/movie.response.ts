@@ -1,4 +1,5 @@
 import { BaseType } from "../base.schema.js"
+import { HistoryResponse } from "../history/history.response.js"
 
 interface Base {
   id?: string
@@ -90,10 +91,11 @@ export interface EpisodeResponse {
 }
 
 export interface EpisodeVideoResponse {
+  id: string
   linkEmbed: string | null
   linkM3u8: string | null
-
   name: string | null
+  history: null | HistoryResponse
 }
 
 export interface MovieServerResponse {

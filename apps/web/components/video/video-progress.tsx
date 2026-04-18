@@ -2,7 +2,7 @@ import { TimeSlider } from "@vidstack/react"
 
 const VideoProgress = () => {
   return (
-    <TimeSlider.Root className="group relative mx-[7.5px] inline-flex h-10 w-full cursor-pointer touch-none items-center outline-none select-none aria-hidden:hidden">
+    <TimeSlider.Root className="group relative mx-[7.5px] inline-flex h-5 w-full cursor-pointer touch-none items-center outline-none select-none aria-hidden:hidden md:h-10">
       <TimeSlider.Track className="relative z-0 h-1.25 w-full rounded-sm bg-white/30 ring-sky-400 group-data-focus:ring-[3px]">
         <TimeSlider.TrackFill className="absolute h-full w-(--slider-fill) rounded-sm bg-indigo-400 will-change-[width]" />
         <TimeSlider.Progress className="absolute z-10 h-full w-(--slider-progress) rounded-sm bg-white/50 will-change-[width]" />

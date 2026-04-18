@@ -4,6 +4,7 @@ import {
   AppResponse,
   FirstEpisodeResponse,
 } from "@workspace/shared/schema/movie/movie.response"
+import { isObject } from "framer-motion"
 
 const Page = async ({ params }: { params: Promise<{ slug: string }> }) => {
   const { slug } = await params
@@ -11,9 +12,12 @@ const Page = async ({ params }: { params: Promise<{ slug: string }> }) => {
     `/movies/first-episode/${slug}`
   )
 
-  if (!data) return <div>Không tìm thấy tập phim</div>
+  if (!data?.episodeSlug || !data.serverId)
+    return <div>Không tìm thấy tập phim</div>
 
-  redirect(`/xem-phim/${slug}/${data.episodeSlug}?server=${data.serverId}`)
+  return redirect(
+    `/xem-phim/${slug}/${data.episodeSlug}?server=${data.serverId}`
+  )
 }
 
 export default Page

@@ -11,6 +11,7 @@ import { MailModule } from './mail/mail.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AppAuthGuard } from './common/guards/app-at.guard';
 import { ChatbotModule } from './chatbot/chatbot.module';
+import { HistoryModule } from './history/history.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ChatbotModule } from './chatbot/chatbot.module';
     AuthModule,
     MailModule,
     ChatbotModule,
+    HistoryModule,
   ],
   controllers: [AppController],
   providers: [

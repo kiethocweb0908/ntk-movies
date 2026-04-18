@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MovieQueryDto } from './dto/movie-query.dto';
 import { Prisma } from '@prisma/client';
 import {
   EpisodeVideoResponse,
@@ -505,11 +504,10 @@ export class MoviesService {
     };
   }
 
-  async getEpisode({
-    episodeSlug,
-    movieSlug,
-    serverId,
-  }: MovieEpisode): Promise<EpisodeVideoResponse> {
+  async getEpisode(
+    { episodeSlug, movieSlug, serverId }: MovieEpisode,
+    userId: string | undefined,
+  ): Promise<EpisodeVideoResponse> {
     const whereCondition: Prisma.EpisodeWhereInput = {
       slug: episodeSlug,
       server: {
@@ -526,10 +524,29 @@ export class MoviesService {
       orderBy: {
         server: { createdAt: 'asc' },
       },
-      select: { linkEmbed: true, linkM3u8: true, name: true },
+      select: {
+        linkEmbed: true,
+        linkM3u8: true,
+        name: true,
+        id: true,
+        ...(userId && {
+          history: {
+            where: { userId },
+            select: {
+              duration: true,
+              currentTime: true,
+              isCompleted: true,
+            },
+            take: 1,
+          },
+        }),
+      },
     });
     if (!episode) throw new NotFoundException('Tập phim không tồn tại');
-    return episode;
+    return {
+      ...episode,
+      history: episode.history?.[0] || null,
+    };
   }
 
   async firstEpisode(slugMovie: string) {
