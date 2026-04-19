@@ -269,31 +269,15 @@ export class MoviesService {
 
   // Lấy phim cho trang home
   async getHomeData() {
-    const [hanQuoc, trungQuoc, auMy, kinhDi] = await Promise.all([
-      this.prisma.country.findUnique({
-        where: { slug: 'han-quoc' },
-        select: { id: true },
-      }),
-      this.prisma.country.findUnique({
-        where: { slug: 'trung-quoc' },
-        select: { id: true },
-      }),
-      this.prisma.country.findUnique({
-        where: { slug: 'au-my' },
-        select: { id: true },
-      }),
-      this.prisma.category.findUnique({
-        where: { slug: 'kinh-di' },
-        select: { id: true },
-      }),
-    ]);
-
     const baseWhere = { published: true };
 
     const queries = [
       // hero
       this.prisma.movie.findMany({
-        where: baseWhere,
+        where: {
+          ...baseWhere,
+          countries: { none: { country: { slug: 'thai-lan' } } },
+        },
         take: 5,
         orderBy: { createdAt: 'desc' },
         select: this.select,
@@ -303,7 +287,7 @@ export class MoviesService {
       this.prisma.movie.findMany({
         where: {
           ...baseWhere,
-          countries: { some: { countryId: hanQuoc?.id } },
+          countries: { some: { country: { slug: 'han-quoc' } } },
         },
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -314,7 +298,7 @@ export class MoviesService {
       this.prisma.movie.findMany({
         where: {
           ...baseWhere,
-          countries: { some: { countryId: trungQuoc?.id } },
+          countries: { some: { country: { slug: 'trung-quoc' } } },
         },
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -323,7 +307,10 @@ export class MoviesService {
 
       // usuk
       this.prisma.movie.findMany({
-        where: { ...baseWhere, countries: { some: { countryId: auMy?.id } } },
+        where: {
+          ...baseWhere,
+          countries: { some: { country: { slug: 'au-my' } } },
+        },
         take: 10,
         orderBy: { createdAt: 'desc' },
         select: this.select,
@@ -333,7 +320,7 @@ export class MoviesService {
       this.prisma.movie.findMany({
         where: {
           ...baseWhere,
-          categories: { some: { categoryId: kinhDi?.id } },
+          categories: { some: { category: { slug: 'kinh-di' } } },
         },
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -344,24 +331,32 @@ export class MoviesService {
       this.prisma.movie.findMany({
         where: {
           ...baseWhere,
-          categories: { some: { categoryId: kinhDi?.id } },
+          categories: { some: { category: { slug: 'kinh-di' } } },
         },
         take: 8,
         orderBy: [{ viewCount: 'desc' }, { imdb_vote_average: 'desc' }],
         select: this.select,
       }),
 
-      // chieurap
+      // anime
       this.prisma.movie.findMany({
-        where: { ...baseWhere, chieurap: true },
+        where: {
+          ...baseWhere,
+          type: 'hoathinh',
+          countries: { some: { country: { slug: 'nhat-ban' } } },
+        },
         take: 10,
         orderBy: { createdAt: 'desc' },
         select: this.select,
       }),
 
-      // topViewChieurap
+      // topViewAnime
       this.prisma.movie.findMany({
-        where: { ...baseWhere, chieurap: true },
+        where: {
+          ...baseWhere,
+          type: 'hoathinh',
+          countries: { some: { country: { slug: 'nhat-ban' } } },
+        },
         take: 8,
         orderBy: [{ viewCount: 'desc' }, { imdb_vote_average: 'desc' }],
         select: this.select,
@@ -375,8 +370,8 @@ export class MoviesService {
       usuk,
       horror,
       topViewHorror,
-      chieurap,
-      topViewChieurap,
+      anime,
+      topViewAnime,
     ] = await Promise.all(queries);
 
     return {
@@ -386,15 +381,35 @@ export class MoviesService {
       usuk: this.formatMovie(usuk),
       horror: this.formatMovie(horror),
       topViewHorror: this.formatMovie(topViewHorror),
-      chieurap: this.formatMovie(chieurap),
-      topViewChieurap: this.formatMovie(topViewChieurap),
+      anime: this.formatMovie(anime),
+      topViewAnime: this.formatMovie(topViewAnime),
     };
   }
 
   // Lấy phim theo mood
   async getMoviesByMood(moodId: string) {
-    const categories = this.getCategoryByMood(moodId);
+    const pinnedSlugs = [
+      'the-gioi-khong-loi-thoat',
+      'tro-choi-con-muc',
+      'vung-dat-cam-lang',
+      'xac-song',
+      'the-chien-z',
+      'chuyen-tau-sinh-tu',
+    ];
 
+    let pinnedMovies: any = [];
+
+    if (moodId === 'sinh-ton') {
+      pinnedMovies = await this.prisma.movie.findMany({
+        where: {
+          slug: { in: pinnedSlugs },
+          published: true,
+        },
+        select: this.select,
+      });
+    }
+
+    const categories = this.getCategoryByMood(moodId);
     const combinations: Prisma.MovieWhereInput[] = [];
     for (let i = 0; i < categories.length; i++) {
       for (let j = i + 1; j < categories.length; j++) {
@@ -438,16 +453,19 @@ export class MoviesService {
         break;
     }
 
-    const movies = await this.prisma.movie.findMany({
-      where: whereCondition,
+    const remainingCount = 8 - pinnedMovies.length;
+    let remainingMovies: any = [];
 
-      orderBy: [{ updatedAt: 'desc' }, { viewCount: 'desc' }],
+    if (remainingCount > 0) {
+      remainingMovies = await this.prisma.movie.findMany({
+        where: whereCondition,
+        orderBy: [{ updatedAt: 'desc' }, { viewCount: 'desc' }],
+        take: remainingCount,
+        select: this.select,
+      });
+    }
 
-      take: 8,
-      select: this.select,
-    });
-
-    return this.formatMovie(movies);
+    return this.formatMovie([...pinnedMovies, ...remainingMovies]);
   }
 
   // Lấy chi tiết phim

@@ -6,9 +6,10 @@ import MovieCarousel from "./movie-carousel"
 interface MovieRowProps {
   tittle: string
   movies: MovieResponse[]
+  path: string
 }
 
-const MovieRow = ({ tittle, movies }: MovieRowProps) => {
+const MovieRow = ({ tittle, movies, path }: MovieRowProps) => {
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl bg-linear-to-t from-transparent from-20% to-[#282b3a] p-4 text-primary lg:p-8 xl:flex-row xl:gap-0">
       {/* tittle */}
@@ -17,7 +18,7 @@ const MovieRow = ({ tittle, movies }: MovieRowProps) => {
           {tittle}
         </h2>
         <Link
-          href={"#"}
+          href={`/quoc-gia/${path}`}
           className="flex items-center gap-1 text-sm hover:text-textHover"
         >
           Xem toàn bộ <ArrowRight size={15} />

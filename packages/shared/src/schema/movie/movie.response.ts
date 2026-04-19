@@ -79,8 +79,8 @@ export interface MovieHomeData {
   usuk: MovieResponse[]
   horror: MovieResponse[]
   topViewHorror: MovieResponse[]
-  chieurap: MovieResponse[]
-  topViewChieurap: MovieResponse[]
+  anime: MovieResponse[]
+  topViewAnime: MovieResponse[]
   categories: BaseType[]
 }
 

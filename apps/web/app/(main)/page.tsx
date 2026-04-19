@@ -19,8 +19,8 @@ export default async function Page() {
   const {
     categories,
     chinese,
-    chieurap,
-    topViewChieurap,
+    anime,
+    topViewAnime,
     hero,
     horror,
     topViewHorror,
@@ -35,13 +35,19 @@ export default async function Page() {
       <div className="relative -top-20 z-10 space-y-2 px-4 lg:space-y-5 lg:px-5">
         <CategoryList categories={categories} />
         <MoodSection />
-        <MovieRow tittle="Phim Hàn Quốc mới" movies={korean} />
-        <MovieRow tittle="Phim Trung Quốc mới" movies={chinese} />
-        <MovieRow tittle="Phim US-UK mới" movies={usuk} />
-        <FeaturedSlider movies={chieurap} tittle="Phim chiếu rạp mới" />
-        <TopTist movies={topViewChieurap} />
+        <MovieRow tittle="Phim Hàn Quốc mới" movies={korean} path="han-quoc" />
+        <MovieRow
+          tittle="Phim Trung Quốc mới"
+          movies={chinese}
+          path="trung-quoc"
+        />
+        <MovieRow tittle="Phim US-UK mới" movies={usuk} path="au-my" />
+
         <FeaturedSlider movies={horror} tittle="Phim kinh dị mới" />
         <TopTist movies={topViewHorror} />
+
+        <FeaturedSlider movies={anime} tittle="Phim Anime mới" />
+        <TopTist movies={topViewAnime} />
       </div>
       <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose"></div>
     </div>
