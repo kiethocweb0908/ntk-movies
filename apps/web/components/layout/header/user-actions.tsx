@@ -154,13 +154,13 @@ const UserActions = ({
 
     if ((!userStore && isInitialized) || !currentUser) {
       return (
-        <div className="w-ful flex items-center gap-2 p-4 px-2">
+        <div className="flex w-full items-center justify-center gap-2 px-3 py-4">
           <Link
             href="/dang-nhap"
             onClick={handleLinkClick}
             className="w-full text-white hover:text-textHover"
           >
-            <Button variant="filter" className="w-full cursor-pointer px-3">
+            <Button variant="filter" className="w-full! cursor-pointer px-3">
               Đăng nhập
             </Button>
           </Link>
@@ -170,7 +170,7 @@ const UserActions = ({
             onClick={handleLinkClick}
             className="w-full text-white hover:text-textHover"
           >
-            <Button variant="filter" className="w-full cursor-pointer px-3">
+            <Button variant="filter" className="w-full! cursor-pointer px-3">
               Đăng ký
             </Button>
           </Link>

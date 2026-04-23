@@ -10,10 +10,16 @@ const VerifyOtpPage = async () => {
   if (!otpEmail) {
     redirect("/")
   }
+
+  const validOtpType =
+    otpType === "REGISTER" || otpType === "FORGOT_PASSWORD"
+      ? otpType
+      : undefined
+
   return (
     <div className="flex min-h-svh flex-col items-center justify-center px-5 pt-28">
       <div className="w-full max-w-sm md:max-w-4xl">
-        <OtpForm email={otpEmail} type={otpType} />
+        <OtpForm email={otpEmail} type={validOtpType} />
       </div>
     </div>
   )

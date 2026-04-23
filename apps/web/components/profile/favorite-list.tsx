@@ -8,7 +8,7 @@ import { api } from "@/lib/api"
 import { FavoritesResponse } from "@workspace/shared/schema/favorite/favorite.response"
 import { MovieCard } from "../movie/movie-card"
 
-const PAGE_SIZE = 3
+const PAGE_SIZE = 18
 
 const FavoriteListClient = () => {
   // Logic lấy Key cho từng trang

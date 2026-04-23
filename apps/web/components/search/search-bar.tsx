@@ -82,7 +82,7 @@ export default function SearchBar({
   }, [hidden])
 
   return (
-    <div className="relative sm:w-full sm:max-w-xs md:max-w-md xl:max-w-sm">
+    <div className="relative sm:w-full sm:max-w-sm md:max-w-md xl:max-w-sm">
       <form
         onSubmit={handleSearchSubmit}
         className={cn("relative z-20 w-full", hidden && "hidden sm:block")}
