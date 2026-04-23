@@ -7,3 +7,5 @@ export const TMDB_IMAGE_BASE =
 export const Movie_WATCH = "/xem-phim"
 
 export const Movie_URL = "/phim"
+
+export const PROFILE_URL = "/trang-ca-nhan"

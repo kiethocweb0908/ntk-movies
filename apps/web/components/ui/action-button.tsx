@@ -1,3 +1,7 @@
+"use client"
+
+import { useFavorite } from "@/hooks/use-favorite"
+import { useAuthStore } from "@/store/use-auth-store"
 import { Movie_URL, Movie_WATCH } from "@workspace/ui/lib/config"
 import { cn } from "@workspace/ui/lib/utils"
 import { Heart, Info, Play } from "lucide-react"
@@ -7,12 +11,14 @@ interface ActionButtonProps {
   variant: "play" | "favorite" | "info"
   path?: string
   size?: "full" | "normal"
+  movieId?: string
 }
 
 const ActionButton = ({
   variant = "favorite",
   path,
   size = "normal",
+  movieId,
 }: ActionButtonProps) => {
   const sizeClass =
     size === "normal"
@@ -42,11 +48,20 @@ const ActionButton = ({
     )
   }
 
-  return (
-    <button className={className}>
-      <Heart size={20} />
-    </button>
-  )
+  if (variant === "favorite") {
+    const { isFavourited, handleToggleFavorite } = useFavorite(movieId)
+
+    return (
+      <button className={className} onClick={handleToggleFavorite}>
+        <Heart
+          size={20}
+          fill={isFavourited ? "#ff4d4f" : "transparent"}
+          color={isFavourited ? "#ff4d4f" : "currentColor"}
+          className={isFavourited ? "drop-shadow-sm" : "opacity-80"}
+        />
+      </button>
+    )
+  }
 }
 
 export default ActionButton

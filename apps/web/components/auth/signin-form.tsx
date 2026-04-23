@@ -22,11 +22,17 @@ import { useRouter } from "next/navigation"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { api } from "@/lib/api"
 import ButtonLoginGoogle from "./button-login-google"
+import { useAuthStore } from "@/store/use-auth-store"
+import { AppResponse } from "@workspace/shared/schema/movie/movie.response"
+import { GetMeResponse } from "@workspace/shared/schema/auth/auth.response"
+import { useChatbotStore } from "@/store/use-chatbot-store"
 
 const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
   const router = useRouter()
   const [isChecked, setIsChecked] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const setAuth = useAuthStore((s) => s.setAuth)
+  const clearMessages = useChatbotStore((s) => s.clearMessages)
 
   const form = useForm<LoginType>({
     resolver: zodResolver(LoginSchema),
@@ -46,18 +52,21 @@ const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
   const onSubmit = async (data: LoginType) => {
     if (isRedirecting) return
 
-    const SignInPromise = api<any>("/auth/login", {
+    const SignInPromise = api<AppResponse<GetMeResponse>>("/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
     })
 
     toast.promise(SignInPromise, {
       loading: "Đang xử lý...",
-      success: (data) => {
+      success: (res) => {
+        const { favIds, user } = res.data!
         setIsRedirecting(true)
+        setAuth(user, favIds)
+        clearMessages()
         router.push("/")
-        router.refresh()
-        return data.message || "Đăng nhập thành công!"
+        // router.refresh()
+        return res.message || "Đăng nhập thành công!"
       },
       error: (err: any) => {
         setIsRedirecting(false)

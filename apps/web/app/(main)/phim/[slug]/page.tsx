@@ -12,15 +12,24 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-async function Page({ params }: PageProps) {
+async function MovieDetailsPage({ params }: PageProps) {
   const { slug } = await params
 
-  const {
-    data: { movie, servers, actors, related },
-    message,
-    status,
-  } = await api<AppResponse<MovieDetailResponse>>(`/movies/detail/${slug}`)
+  const [res, resActors] = await Promise.all([
+    api<AppResponse<MovieDetailResponse>>(`/movies/detail/${slug}`, {
+      next: { revalidate: 3600 },
+    }),
+    fetch(`https://ophim1.com/v1/api/phim/${slug}/peoples`, {
+      next: { revalidate: 604800 },
+    }).catch(() => null),
+  ])
+  let actors = []
+  if (resActors && resActors.ok) {
+    const dataActors = await resActors.json().catch(() => null)
+    actors = dataActors?.data?.peoples || []
+  }
 
+  const { movie, related, servers } = res.data!
   return (
     <main className="">
       <DetailBackground poster={movie.posterUrl} />
@@ -35,6 +44,7 @@ async function Page({ params }: PageProps) {
           <MovieActionToolbar
             viewCount={movie.viewCount}
             slugMovie={movie.slug}
+            movieId={movie.id}
           />
           <MovieTabs
             actors={actors}
@@ -49,4 +59,4 @@ async function Page({ params }: PageProps) {
   )
 }
 
-export default Page
+export default MovieDetailsPage

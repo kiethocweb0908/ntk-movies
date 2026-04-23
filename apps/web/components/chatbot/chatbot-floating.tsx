@@ -32,7 +32,7 @@ export function ChatbotFloating() {
         <PopoverContent
           side="top"
           align="end"
-          className="mb-25 ml-3 h-125 w-95 border-muted bg-slate-900 p-0 shadow-2xl sm:mr-15 sm:mb-0 sm:ml-0"
+          className="mb-25 ml-3 h-141 w-95 translate-y-20 overflow-hidden border-muted bg-slate-900 p-0 shadow-2xl sm:mr-15 sm:mb-0 sm:ml-0"
         >
           <ChatbotWindow />
         </PopoverContent>

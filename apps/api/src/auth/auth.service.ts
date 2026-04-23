@@ -284,8 +284,7 @@ export class AuthService {
     });
 
     try {
-      // await this.mailService.sendOtp(email, otp, `${firstName} ${lastName}`);
-      console.log('OTP: ', otp);
+      await this.mailService.sendOtp(email, otp, `${firstName} ${lastName}`);
     } catch (error) {
       throw new BadRequestException(
         'Không thể gửi email lúc này, vui lòng thử lại sau',
@@ -357,10 +356,14 @@ export class AuthService {
         accessToken,
         refreshToken,
         user: {
+          id: newUser.id,
           lastName: newUser.lastName,
           firstName: newUser.firstName,
           email: newUser.email,
           userName: newUser.userName,
+          avatarId: newUser.avatarId,
+          avatarUrl: newUser.avatarUrl,
+          role: 'user',
         },
       };
     }
@@ -429,8 +432,7 @@ export class AuthService {
       ? `${userData.firstName || ''} ${userData.lastName || ''}`.trim()
       : 'Bạn';
 
-    // await this.mailService.sendOtp(email, otp, fullName, type);
-    console.log('otp: ', otp);
+    await this.mailService.sendOtp(email, otp, fullName, type);
     return {
       message: `Mã OTP đã được gửi lại ${email}`,
     };
@@ -447,6 +449,7 @@ export class AuthService {
         firstName: true,
         lastName: true,
         avatarUrl: true,
+        avatarId: true,
         role: {
           select: {
             slug: true,
@@ -459,7 +462,10 @@ export class AuthService {
       throw new NotFoundException('Người dùng không tồn tại');
     }
 
-    return user;
+    return {
+      ...user,
+      role: user.role.slug,
+    };
   }
 
   // Quên mật khẩu
@@ -506,13 +512,12 @@ export class AuthService {
 
     const fullName =
       (existingUser.firstName + ' ' + existingUser.lastName).trim() || 'Bạn';
-    // await this.mailService.sendOtp(
-    //   existingUser.email,
-    //   otp,
-    //   fullName,
-    //   'FORGOT_PASSWORD',
-    // );
-    console.log('OTP: ', otp);
+    await this.mailService.sendOtp(
+      existingUser.email,
+      otp,
+      fullName,
+      'FORGOT_PASSWORD',
+    );
 
     return {
       message: `Mã OTP đã được gửi đến email ${existingUser.email}. Vui lòng xác thực trong 5 phút.`,

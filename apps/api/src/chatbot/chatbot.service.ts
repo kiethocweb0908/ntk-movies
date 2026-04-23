@@ -216,7 +216,7 @@ export class ChatbotService {
   private async formatMovieText(movies: MovieResponse[], intent: IntentType) {
     try {
       const res = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.1-flash-lite-preview',
         contents: `
         Dựa vào danh sách phim sau, hãy viết lời gợi ý tự nhiên:
         ${JSON.stringify(movies.slice(0, 5))}
@@ -239,7 +239,7 @@ export class ChatbotService {
   private async normalChat(message: string) {
     try {
       const res = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.1-flash-lite-preview',
         contents: `
         Bạn là trợ lý cho trang web xem phim trực tuyến NTK Phim.
         Hãy trò truyện với người dùng lịch sự thân thiện, trả lời ngắn gọn thôi.
@@ -247,7 +247,8 @@ export class ChatbotService {
       });
 
       return res.text;
-    } catch {
+    } catch (err) {
+      console.log('Lỗi: ', err);
       return 'Có lỗi xảy ra 😢';
     }
   }

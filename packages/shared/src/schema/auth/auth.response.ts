@@ -10,15 +10,26 @@ export interface ResendOTPResponse {
 export interface Verify_REGISTER {
   accessToken: string
   refreshToken: string
-  user?: {
-    lastName: string | null
-    firstName: string | null
-    email: string | null
-    userName: string | null
-  }
+  user: UserResponse
 }
 
 export interface Verify_FORGOT_PASSWORD {
   message: string
   resetPasswordToken: string
+}
+
+export interface UserResponse {
+  id: string
+  role: string
+  email: string
+  userName?: string | null
+  firstName: string | null
+  lastName: string | null
+  avatarUrl?: string | null
+  avatarId?: string | null
+}
+
+export interface GetMeResponse {
+  user: UserResponse
+  favIds: string[]
 }

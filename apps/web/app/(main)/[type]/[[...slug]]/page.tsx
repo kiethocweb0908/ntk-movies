@@ -1,4 +1,5 @@
 import Filter from "@/components/filter/filter"
+import { MovieCard } from "@/components/movie/movie-card"
 import MovieList from "@/components/movie/movie-list"
 import MoviePagination from "@/components/movie/movie-pagination"
 import TitleSection from "@/components/ui/tittle-section"
@@ -57,9 +58,8 @@ const Page = async ({ params, searchParams }: PageProps) => {
 
   const queryString = new URLSearchParams(queryObj).toString()
 
-  const {
-    data: { meta, movies },
-  } = await api<AppResponse<MoviesResponse>>(`/movies?${queryString}`)
+  const res = await api<AppResponse<MoviesResponse>>(`/movies?${queryString}`)
+  const { meta, movies } = res.data!
 
   if (isCategoryOrCountry && movies.length === 0) {
     notFound()
@@ -77,7 +77,13 @@ const Page = async ({ params, searchParams }: PageProps) => {
       </div>
       {movies.length > 0 ? (
         <>
-          <MovieList movies={movies} grid={6} />
+          <MovieList
+            items={movies}
+            grid={6}
+            renderItem={(item, index) => (
+              <MovieCard key={item.slug} movie={item} index={index} />
+            )}
+          />
           <MoviePagination
             currentPage={meta.page}
             totalPages={meta.totalPages}

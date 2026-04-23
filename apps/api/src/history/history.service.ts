@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateHistoryType } from '@workspace/shared/schema/history/history.dto';
+import {
+  HistoyryQueryType,
+  UpdateHistoryType,
+} from '@workspace/shared/schema/history/history.dto';
+import { HistoriesResponse } from '@workspace/shared/schema/history/history.response';
 
 @Injectable()
 export class HistoryService {
@@ -35,9 +39,21 @@ export class HistoryService {
   }
 
   // Lấy danh sách phim đã xem
-  async getUserHistory(userId: string) {
+  async getUserHistory(
+    userId: string,
+    query: HistoyryQueryType,
+  ): Promise<HistoriesResponse> {
+    const { limit = 10, cursor } = query;
     const histories = await this.prisma.history.findMany({
-      where: { userId },
+      where: {
+        userId,
+        ...(cursor && {
+          updatedAt: {
+            lt: new Date(cursor),
+          },
+        }),
+      },
+      take: limit + 1,
       orderBy: { updatedAt: 'desc' },
       select: {
         currentTime: true,
@@ -51,16 +67,15 @@ export class HistoryService {
             serverId: true,
             server: {
               select: {
+                name: true,
                 movie: {
                   select: {
                     id: true,
+                    slug: true,
                     name: true,
                     originName: true,
                     thumbUrl: true,
                     posterUrl: true,
-                    status: true,
-                    lang_key: true,
-                    lang: true,
                   },
                 },
               },
@@ -70,7 +85,10 @@ export class HistoryService {
       },
     });
 
-    const formatedHistories = histories.map((item) => {
+    const hasMore = histories.length > limit;
+    const items = hasMore ? histories.slice(0, limit) : histories;
+
+    const formattedItems = items.map((item) => {
       const movie = item.episode.server.movie;
       const progress =
         item.duration > 0
@@ -78,9 +96,15 @@ export class HistoryService {
           : 0;
 
       return {
-        ...item,
-        progress,
+        history: {
+          currentTime: item.currentTime,
+          duration: item.duration,
+          isCompleted: item.isCompleted,
+          updatedAt: item.updatedAt,
+          progress,
+        },
         episode: {
+          serverName: item.episode.server.name,
           name: item.episode.name,
           slug: item.episode.slug,
           serverId: item.episode.serverId,
@@ -91,6 +115,13 @@ export class HistoryService {
       };
     });
 
-    return formatedHistories;
+    return {
+      histories: formattedItems,
+      nextCursor:
+        hasMore && items.length > 0
+          ? items[items.length - 1].updatedAt.toISOString()
+          : null,
+      hasMore,
+    };
   }
 }

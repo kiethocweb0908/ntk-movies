@@ -22,10 +22,21 @@ export default async function MovieWatchLayout({
 }) {
   const { slug } = await params
 
-  const res = await api<AppResponse<MovieDetailResponse>>(
-    `/movies/detail/${slug}`
-  )
-  const { movie, servers, actors, related } = res.data!
+  const [res, resActors] = await Promise.all([
+    api<AppResponse<MovieDetailResponse>>(`/movies/detail/${slug}`, {
+      next: { revalidate: 3600 },
+    }),
+    fetch(`https://ophim1.com/v1/api/phim/${slug}/peoples`, {
+      next: { revalidate: 604800 },
+    }).catch(() => null),
+  ])
+  let actors = []
+  if (resActors && resActors.ok) {
+    const dataActors = await resActors.json().catch(() => null)
+    actors = dataActors?.data?.peoples || []
+  }
+
+  const { movie, related, servers } = res.data!
   const topActors = actors.slice(0, 6)
 
   return (

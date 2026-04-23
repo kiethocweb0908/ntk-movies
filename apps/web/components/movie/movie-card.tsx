@@ -6,7 +6,7 @@ import Link from "next/link"
 
 interface MovieCardProps {
   movie: MovieResponse
-  variant?: "horizontal" | "vertical"
+  variantImg?: "horizontal" | "vertical"
   showTittle?: boolean
   index?: number
   isHorizontal?: boolean
@@ -14,7 +14,7 @@ interface MovieCardProps {
 
 export const MovieCard = ({
   movie,
-  variant = "vertical",
+  variantImg = "vertical",
   showTittle = true,
   index = 8,
   isHorizontal = false,
@@ -42,16 +42,19 @@ export const MovieCard = ({
       </div>
     )
 
-  const aspectClass = variant === "horizontal" ? "aspect-3/2" : "aspect-2/3"
+  const aspectClass = variantImg === "horizontal" ? "aspect-3/2" : "aspect-2/3"
   const src =
-    variant === "horizontal"
+    variantImg === "horizontal"
       ? IMG_URL + movie.posterUrl
       : IMG_URL + movie.thumbUrl
 
   const isPriority = index < 7
 
   return (
-    <div className="group flex flex-col items-center justify-between select-none">
+    <Link
+      href={`${Movie_URL}/${movie.slug}`}
+      className="group flex flex-col items-center justify-between select-none"
+    >
       <div
         className={`relative ${aspectClass} w-full overflow-hidden rounded-lg`}
       >
@@ -75,10 +78,7 @@ export const MovieCard = ({
         </div>
       </div>
       {showTittle && (
-        <Link
-          href={`${Movie_URL}/${movie.slug}`}
-          className="group relative block w-full cursor-pointer pt-4"
-        >
+        <div className="group relative block w-full cursor-pointer pt-4">
           <h3 className="line-clamp-1 text-center text-sm font-semibold text-primary group-hover:text-textHover">
             {movie.name}
           </h3>
@@ -86,8 +86,8 @@ export const MovieCard = ({
           <p className="line-clamp-1 text-center text-sm text-primary group-hover:text-textHover/60">
             {movie.originName}
           </p>
-        </Link>
+        </div>
       )}
-    </div>
+    </Link>
   )
 }

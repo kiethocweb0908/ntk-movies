@@ -47,7 +47,6 @@ export default async function EpisodePage({
     `/movies/episode?${query.toString()}`
   )
   const data = res.data!
-  console.log("episode: ", data)
   if (!data.linkM3u8 && !data.linkM3u8)
     return <div className="p-4 text-center">Không tìm thấy link phim</div>
 
@@ -55,6 +54,7 @@ export default async function EpisodePage({
     <VideoPlayer
       url={data.linkM3u8 || data.linkEmbed!}
       title={"Tập " + data.name || ""}
+      movieSlug={slug}
       episodeId={data.id}
       history={data.history}
       isLoggedIn={!!accessToken || !!refreshToken}

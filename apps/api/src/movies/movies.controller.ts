@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Query, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { CategoryService } from '../category/category.service';
 import {
@@ -15,6 +24,7 @@ import {
   MovieQueryDto,
 } from './dto/movie-query.dto';
 import { type RequestWithUser } from '../types/auth.type';
+import { NoCheckToken } from '../common/decorators/no-check-tonken.decorator';
 
 @Controller('movies')
 export class MoviesController {
@@ -96,5 +106,18 @@ export class MoviesController {
       message: 'Lấy tập phim thành công!',
       data,
     };
+  }
+
+  @NoCheckToken()
+  @Post('update-view/:movieSlug')
+  async updateView(@Param() param: { movieSlug: string }) {
+    return await this.moviesService.updateView(param.movieSlug);
+  }
+
+  @NoCheckToken()
+  @Get('keep-server')
+  @HttpCode(HttpStatus.OK)
+  async keepServer() {
+    return;
   }
 }

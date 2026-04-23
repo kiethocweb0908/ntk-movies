@@ -387,7 +387,7 @@ export class MoviesService {
   }
 
   // Lấy phim theo mood
-  async getMoviesByMood(moodId: string) {
+  async getMoviesByMood(moodId: string): Promise<MovieResponse[]> {
     const pinnedSlugs = [
       'the-gioi-khong-loi-thoat',
       'tro-choi-con-muc',
@@ -487,25 +487,28 @@ export class MoviesService {
             },
           },
         },
-        actors: { select: { actorId: true } },
+        // actors: { select: { actorId: true } },
       },
     });
 
     if (!movie) throw new NotFoundException('Phim không tồn tại');
 
-    const actorIds = movie.actors.map((a) => a.actorId);
     const categoryIds = movie.categories.map((c) => c.category.id);
     const countryIds = movie.countries.map((c) => c.country.id);
 
-    const { actors: _, ...movieWithoutActors } = movie;
+    // const { actors: _, ...movieWithoutActors } = movie;
     const formatedMovie = {
-      ...movieWithoutActors,
-      categories: movieWithoutActors.categories.map((c) => c.category),
-      countries: movieWithoutActors.countries.map((c) => c.country),
+      ...movie,
+      categories: movie.categories.map((c) => c.category),
+      countries: movie.countries.map((c) => c.country),
     };
 
-    const [actors, servers, related] = await Promise.all([
-      this.getActorsByMovieId(movie.id),
+    const [
+      // actors,
+      servers,
+      related,
+    ] = await Promise.all([
+      // this.getActorsByMovieId(movie.id),
       this.getServersByMovieId(movie.id),
       this.getRelatedMovies(
         formatedMovie.id,
@@ -519,7 +522,7 @@ export class MoviesService {
 
     return {
       movie: formatedMovie,
-      actors,
+      // actors,
       servers,
       related,
     };
@@ -670,5 +673,29 @@ export class MoviesService {
       serverId: movie.servers[0].id,
       episodeSlug: movie.servers[0].episodes[0].slug,
     };
+  }
+
+  async updateView(movieSlug: string) {
+    try {
+      const updatedMovie = await this.prisma.movie.update({
+        where: {
+          slug: movieSlug,
+        },
+        data: {
+          viewCount: {
+            increment: 1,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          viewCount: true,
+        },
+      });
+
+      return updatedMovie;
+    } catch (error) {
+      throw new NotFoundException(`Không tìm thấy phim với slug: ${movieSlug}`);
+    }
   }
 }

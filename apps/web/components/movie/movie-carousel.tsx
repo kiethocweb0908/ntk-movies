@@ -8,32 +8,33 @@ import {
 import { MovieResponse } from "@workspace/shared/schema/movie/movie.response"
 import { MovieCard } from "./movie-card"
 
-interface MovieCarouselProps {
-  movies: MovieResponse[]
-  variant?: "vertical" | "horizontal"
+interface MovieCarouselProps<T> {
+  items: T[]
   isFull?: boolean
+  renderItem: (item: T, index: number) => React.ReactNode
 }
 
-const MovieCarousel = ({
-  movies,
-  variant = "horizontal",
+const MovieCarousel = <T,>({
+  items,
   isFull = false,
-}: MovieCarouselProps) => {
-  if (!movies) return
+  renderItem,
+}: MovieCarouselProps<T>) => {
+  if (!items || items.length === 0) return
   const basisClass = isFull
     ? "basis-1/2 sm:basis-1/4 lg:basis-1/6 xl:basis-1/8 "
     : "md:basis-1/3 lg:basis-1/4 xl:basis-1/4"
   return (
     <Carousel opts={{ align: "start" }} className="w-full">
       <CarouselContent className="-ml-1 cursor-grab">
-        {movies.map((movie, index) => (
+        {items.map((item, index) => (
           <CarouselItem
             key={index}
             //   className="pl-1 lg:basis-1/4"
             className={`basis-1/2 pl-1 ${basisClass}`}
           >
             <div className="relative p-1">
-              <MovieCard movie={movie} variant={variant} index={index} />
+              {/* <MovieCard movie={movie} variant={variant} index={index} /> */}
+              {renderItem(item, index)}
             </div>
           </CarouselItem>
         ))}

@@ -41,12 +41,11 @@ export async function api<T>(
 
     return data
   } catch (err) {
-    console.error("🚨 NETWORK ERROR:", err)
+    // console.error("🚨 NETWORK ERROR:", err)
+    // const error: any = new Error("BACKEND_UNAVAILABLE")
+    // error.code = "BACKEND_UNAVAILABLE"
+    // error.status = 503
 
-    const error: any = new Error("BACKEND_UNAVAILABLE")
-    error.code = "BACKEND_UNAVAILABLE"
-    error.status = 503
-
-    throw error
+    throw err
   }
 }

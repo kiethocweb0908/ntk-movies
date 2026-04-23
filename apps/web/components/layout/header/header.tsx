@@ -10,16 +10,23 @@ import { CountryResponse } from "@workspace/shared/schema/country/country.respon
 import { MainNav } from "./main-nav"
 import MobileNav from "./mobile-nav"
 import UserActions from "./user-actions"
+import { UserResponse } from "@workspace/shared/schema/auth/auth.response"
+import { useAuthStore } from "@/store/use-auth-store"
 
 interface HeaderProps {
   categories: CategoryResponse[]
   countries: CountryResponse[]
-  user?: any
+  user: UserResponse | null
+  favIds: string[] | null
 }
 
-const Header = ({ categories, countries, user }: HeaderProps) => {
+const Header = ({ categories, countries, user, favIds }: HeaderProps) => {
+  const setAuth = useAuthStore((s) => s.setAuth)
   const [isScrolled, setIsScrolled] = useState(false)
   useEffect(() => {
+    if (user) {
+      setAuth(user, favIds || [])
+    }
     const handleScroll = () => {
       // Nếu cuộn quá 20px thì đổi trạng thái
       if (window.scrollY > 60) {
@@ -36,13 +43,13 @@ const Header = ({ categories, countries, user }: HeaderProps) => {
   return (
     <div
       className={cn(
-        "fixed right-0 left-0 z-50 flex items-center justify-between p-4 transition-all duration-300 ease-in-out lg:px-5",
+        "fixed right-0 left-0 z-50 flex items-center justify-between gap-5 p-4 transition-all duration-300 ease-in-out lg:px-5",
         isScrolled
           ? "h-18 bg-slate-900/90 shadow-lg backdrop-blur-md"
           : "h-22 bg-transparent"
       )}
     >
-      <div className="flex flex-1 items-center gap-6">
+      <div className="flex flex-1 items-center gap-5">
         <Logo />
 
         <SearchBar />
@@ -56,7 +63,7 @@ const Header = ({ categories, countries, user }: HeaderProps) => {
         <div className="hidden md:block">
           <UserActions user={user} />
         </div>
-        <MobileNav categories={categories} countries={countries} />
+        <MobileNav categories={categories} countries={countries} user={user} />
       </div>
     </div>
   )

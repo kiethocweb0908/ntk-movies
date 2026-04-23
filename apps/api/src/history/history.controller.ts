@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { HistoryService } from './history.service';
-import { UpdateHistoryDto } from './dto/history.dto';
+import { HistoyryQueryDto, UpdateHistoryDto } from './dto/history.dto';
 import { type RequestWithUser } from '../types/auth.type';
 import { AtGuard } from '../common/guards/auth.guard';
+import { AppResponse } from '@workspace/shared/schema/movie/movie.response';
+import { HistoriesResponse } from '@workspace/shared/schema/history/history.response';
 
 @Controller('history')
 export class HistoryController {
@@ -19,7 +29,14 @@ export class HistoryController {
 
   @Get()
   @UseGuards(AtGuard)
-  async getHistory(@Req() req: RequestWithUser) {
-    return this.historyService.getUserHistory(req.user.id);
+  async getHistory(
+    @Req() req: RequestWithUser,
+    @Query() query: HistoyryQueryDto,
+  ): Promise<AppResponse<HistoriesResponse>> {
+    const data = await this.historyService.getUserHistory(req.user.id, query);
+    return {
+      message: 'Thành công!',
+      data,
+    };
   }
 }

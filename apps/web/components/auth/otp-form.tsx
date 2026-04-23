@@ -17,8 +17,14 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
-import { ResendOTPResponse } from "@workspace/shared/schema/auth/auth.response"
+import {
+  GetMeResponse,
+  ResendOTPResponse,
+} from "@workspace/shared/schema/auth/auth.response"
 import { useApi } from "@/hooks/use-api"
+import { useAuthStore } from "@/store/use-auth-store"
+import { AppResponse } from "@workspace/shared/schema/movie/movie.response"
+import { useChatbotStore } from "@/store/use-chatbot-store"
 
 interface OtpFormProps {
   className?: string
@@ -38,6 +44,8 @@ const OtpForm = ({
   const [otp, setOtp] = useState("")
   const [countdown, setCountdown] = useState(0)
   const [loading, setLoading] = useState(false)
+  const setAuth = useAuthStore((s) => s.setAuth)
+  const clearMessages = useChatbotStore((s) => s.clearMessages)
 
   useEffect(() => {
     if (countdown > 0) {
@@ -52,10 +60,13 @@ const OtpForm = ({
     if (otp.length !== 6) return toast.error("Vui lòng nhập đủ 6 số")
 
     setLoading(true)
-    const verifyPromise = callApi<{ message: string }>("/auth/verify-otp", {
-      method: "POST",
-      body: JSON.stringify({ email, type, otp }),
-    })
+    const verifyPromise = callApi<AppResponse<GetMeResponse>>(
+      "/auth/verify-otp",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, type, otp }),
+      }
+    )
 
     toast.promise(verifyPromise, {
       loading: "Đang xác minh...",
@@ -66,8 +77,11 @@ const OtpForm = ({
         if (type === "FORGOT_PASSWORD") {
           router.push("/khoi-phuc-mat-khau")
         } else {
+          const { favIds, user } = data.data!
+          setAuth(user, favIds)
+          clearMessages()
           router.push("/")
-          router.refresh()
+          // router.refresh()
         }
         return data.message || "Xác thực thành công!"
       },

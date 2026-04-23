@@ -30,12 +30,14 @@ import VideoProgress from "./video-progress"
 import VideoTooltip from "./video-tooltip"
 import VideoVolume from "./video-volume"
 import { HistoryResponse } from "@workspace/shared/schema/history/history.response"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useApi } from "@/hooks/use-api"
+import { api } from "@/lib/api"
 
 interface VideoPlayerProps {
   url: string
   title?: string
+  movieSlug: string
   episodeId: string
   history: HistoryResponse | null
   isLoggedIn: boolean
@@ -44,12 +46,14 @@ interface VideoPlayerProps {
 export default function VideoPlayer({
   url,
   title = "",
+  movieSlug,
   episodeId,
   history,
   isLoggedIn,
 }: VideoPlayerProps) {
   const { callApi } = useApi()
   const player = useRef<MediaPlayerInstance>(null)
+  const [hasViewIncreased, setHasViewIncreased] = useState(false)
 
   // const currentTime = useMediaState("currentTime", player)
   const duration = useMediaState("duration", player)
@@ -57,10 +61,10 @@ export default function VideoPlayer({
   const canPlay = useMediaState("canPlay", player)
   //--------------------
 
+  // tải đến đoạn đã xem
   useEffect(() => {
     if (!canPlay || !player.current) return
 
-    console.log("Đã chạy vào đây")
     let startTime = 0
     if (isLoggedIn && history) {
       startTime = history.currentTime
@@ -103,15 +107,47 @@ export default function VideoPlayer({
         localStorage.setItem("guest_history", JSON.stringify(localData))
       }
     }
-
     const interval = setInterval(syncHistory, 30000)
     return () => clearInterval(interval)
-  }, [paused, isLoggedIn, episodeId])
+  }, [paused, isLoggedIn, duration, episodeId])
+
+  // Cập nhật lượt xem
+  useEffect(() => {
+    if (hasViewIncreased || paused || !canPlay) return
+
+    const timer = setTimeout(async () => {
+      try {
+        await api(`/movies/update-view/${movieSlug}`, { method: "POST" })
+        setHasViewIncreased(true)
+      } catch (error) {
+        console.error("Lỗi tăng lượt xem:", error)
+      }
+    }, 30000)
+
+    return () => clearTimeout(timer)
+  }, [episodeId, movieSlug, hasViewIncreased, paused, canPlay])
+
+  useEffect(() => {
+    setHasViewIncreased(false)
+  }, [episodeId])
+
+  // gọi api tránh server ngủ đông
+  useEffect(() => {
+    if (isLoggedIn) return
+
+    const keepServerAlive = () => {
+      api("/keep-server", { method: "GET" }).catch(() => {})
+    }
+
+    const heartbeatInterval = setInterval(keepServerAlive, 5 * 60 * 1000)
+    return () => clearInterval(heartbeatInterval)
+  }, [isLoggedIn])
 
   function onHlsInstance(hls: Hls) {
     hls.config.maxBufferLength = 5
     hls.config.enableWorker = true
   }
+
   return (
     <div
       // className="group relative h-full w-full"
@@ -124,8 +160,8 @@ export default function VideoPlayer({
         viewType="video"
         crossOrigin
         playsInline
-        // streamType={url.includes("m3u8") ? "on-demand" : "unknown"}
-        streamType="on-demand"
+        streamType={url.includes("m3u8") ? "on-demand" : "unknown"}
+        // streamType="on-demand"
         onHlsInstance={onHlsInstance}
         // className="relative h-full w-full overflow-hidden bg-black [&_video]:absolute [&_video]:inset-0 [&_video]:h-full [&_video]:w-full [&_video]:object-cover"
       >

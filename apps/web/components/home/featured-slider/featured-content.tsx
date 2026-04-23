@@ -116,7 +116,7 @@ const FeaturedContent = memo(
           onMouseLeave={() => setPaused(false)}
         >
           <ActionButton variant="play" path={currentMovie.slug} />
-          <ActionButton variant="favorite" />
+          <ActionButton variant="favorite" movieId={currentMovie.id} />
           <ActionButton variant="info" path={currentMovie.slug} />
         </motion.div>
       </div>

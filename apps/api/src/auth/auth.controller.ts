@@ -25,10 +25,16 @@ import { type DeviceInfoType } from '@workspace/shared/schema/auth/auth.dto';
 import { AtGuard } from '../common/guards/auth.guard';
 import { NoCheckToken } from '../common/decorators/no-check-tonken.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { AppResponse } from '@workspace/shared/schema/movie/movie.response';
+import { GetMeResponse } from '@workspace/shared/schema/auth/auth.response';
+import { FavoriteService } from '../favorite/favorite.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly favoriteService: FavoriteService,
+  ) {}
 
   // Đăng ký -> gửi otp
   @NoCheckToken()
@@ -53,9 +59,8 @@ export class AuthController {
     @Req() req: eRequest,
     @Res({ passthrough: true }) res: Response,
     @GetDeviceInfo() deviceInfo: DeviceInfoType,
-  ) {
+  ): Promise<AppResponse<GetMeResponse>> {
     const data = await this.authService.verifyOTP(body, deviceInfo);
-
     if (body.type === 'REGISTER' && 'accessToken' in data) {
       this.authService.setCookies(res, {
         accessToken: data.accessToken,
@@ -74,8 +79,15 @@ export class AuthController {
         7 * 24 * 60 * 60 * 1000,
       );
       this.authService.clearCookies(res, 'otp_email', 'otp_type');
+      const favIds = await this.favoriteService.getFavoriteMovieIds(
+        data.user.id,
+      );
       return {
         message: 'Tạo tài khoản thành công!',
+        data: {
+          user: data.user,
+          favIds,
+        },
       };
     }
     if (body.type === 'FORGOT_PASSWORD' && 'resetPasswordToken' in data) {
@@ -83,6 +95,9 @@ export class AuthController {
       this.authService.setCookie(res, 'reset_token', data.resetPasswordToken);
       return { message: data.message };
     }
+    return {
+      message: 'Lỗi',
+    };
   }
 
   // Gửi lại otp
@@ -102,19 +117,22 @@ export class AuthController {
     @Request() req: RequestWithUser,
     @Res({ passthrough: true }) res: Response,
     @GetDeviceInfo() deviceInfo: DeviceInfoType,
-  ) {
+  ): Promise<AppResponse<GetMeResponse>> {
     const [{ accessToken }, refreshToken] = await Promise.all([
       this.authService.generateAccessToken(req.user.id),
       this.authService.createSession(req.user.id, deviceInfo),
     ]);
     this.authService.setCookies(res, { accessToken, refreshToken });
+    const [favIds, user] = await Promise.all([
+      this.favoriteService.getFavoriteMovieIds(req.user.id),
+      this.authService.getMe(req.user.id),
+    ]);
 
     return {
       message: 'Đăng nhập thành công!',
-      user: {
-        userName: req.user.userName,
-        firstName: req.user.firstName,
-        role: req.user.role.slug,
+      data: {
+        user,
+        favIds,
       },
     };
   }
@@ -137,12 +155,20 @@ export class AuthController {
   @Get('me')
   @UseGuards(AtGuard)
   @HttpCode(HttpStatus.OK)
-  async getMe(@Req() req: RequestWithUser) {
-    const user = await this.authService.getMe(req.user.id);
+  async getMe(
+    @Req() req: RequestWithUser,
+  ): Promise<AppResponse<GetMeResponse>> {
+    const [favIds, user] = await Promise.all([
+      this.favoriteService.getFavoriteMovieIds(req.user.id),
+      this.authService.getMe(req.user.id),
+    ]);
 
     return {
       message: 'Lấy thông tin thành công!',
-      user,
+      data: {
+        user,
+        favIds,
+      },
     };
   }
 

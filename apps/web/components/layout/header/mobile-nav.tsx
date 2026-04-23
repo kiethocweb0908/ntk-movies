@@ -7,10 +7,8 @@ import { CountryResponse } from "@workspace/shared/schema/country/country.respon
 import { Button } from "@workspace/ui/components/button"
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -18,13 +16,16 @@ import {
 import { useState } from "react"
 import MobileNavItem from "./mobile-nav-item"
 import { Accordion } from "@workspace/ui/components/accordion"
+import { UserResponse } from "@workspace/shared/schema/auth/auth.response"
+import UserActions from "./user-actions"
 
 interface MobileNavProps {
   categories: CategoryResponse[]
   countries: CountryResponse[]
+  user: UserResponse | null
 }
 
-const MobileNav = ({ categories, countries }: MobileNavProps) => {
+const MobileNav = ({ categories, countries, user }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -64,6 +65,7 @@ const MobileNav = ({ categories, countries }: MobileNavProps) => {
             ))}
           </Accordion>
         </div>
+        <UserActions user={user} isMobile={true} setIsOpen={setIsOpen} />
       </DrawerContent>
     </Drawer>
   )

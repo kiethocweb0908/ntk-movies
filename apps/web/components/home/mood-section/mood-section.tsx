@@ -1,11 +1,15 @@
 "use client"
+
 import useSWR from "swr"
 import { useState } from "react"
-
-import { API_URL } from "@/lib/api"
-import MovieList from "@/components/movie/movie-list"
+import { api, API_URL } from "@/lib/api"
 import TitleSection from "@/components/ui/tittle-section"
 import MovieCarousel from "@/components/movie/movie-carousel"
+import { MovieCard } from "@/components/movie/movie-card"
+import {
+  AppResponse,
+  MovieResponse,
+} from "@workspace/shared/schema/movie/movie.response"
 
 const MOODS = [
   {
@@ -40,14 +44,15 @@ const MOODS = [
   },
 ]
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
-
 function MoodSection() {
   const [activeMood, setActiveMood] = useState("combat")
 
   const { data, error, isLoading } = useSWR(
-    `${API_URL}/movies/mood/${activeMood}`,
-    fetcher
+    `/movies/mood/${activeMood}`,
+    (url) => api<AppResponse<MovieResponse[]>>(url),
+    {
+      revalidateOnFocus: false,
+    }
   )
 
   if (error) {
@@ -86,7 +91,13 @@ function MoodSection() {
             </span>
           </div>
         ) : (
-          <MovieCarousel movies={movies} isFull={true} variant="vertical" />
+          <MovieCarousel
+            items={movies}
+            isFull={true}
+            renderItem={(item, index) => (
+              <MovieCard movie={item} index={index} />
+            )}
+          />
         )}
       </div>
     </section>

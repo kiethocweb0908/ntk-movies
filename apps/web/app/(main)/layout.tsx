@@ -11,6 +11,8 @@ import { CountryResponse } from "@workspace/shared/schema/country/country.respon
 import { Toaster } from "sonner"
 import { cookies } from "next/headers"
 import { ChatbotFloating } from "@/components/chatbot/chatbot-floating"
+import { GetMeResponse } from "@workspace/shared/schema/auth/auth.response"
+import { AppResponse } from "@workspace/shared/schema/movie/movie.response"
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -27,25 +29,26 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const getMe = async () => {
+  const getMe = async (): Promise<AppResponse<GetMeResponse> | null> => {
     const cookieStore = await cookies()
-    const allCookies = cookieStore.toString()
     const hasToken =
       cookieStore.has("accessToken") || cookieStore.has("refreshToken")
+
     if (hasToken)
-      return await api<{ user: any; message: string }>("/auth/me", {
-        headers: {
-          Cookie: allCookies,
-        },
+      return await api<AppResponse<GetMeResponse>>("/auth/me", {
         cache: "no-store",
       })
     return null
   }
 
   // fetch category và country
-  const [categories, countries, userData] = await Promise.all([
-    api<CategoryResponse[]>("/category").catch(() => []),
-    api<CountryResponse[]>("/country").catch(() => []),
+  const [categories, countries, auth] = await Promise.all([
+    api<CategoryResponse[]>("/category", {
+      next: { revalidate: 604800 },
+    }).catch(() => []),
+    api<CountryResponse[]>("/country", {
+      next: { revalidate: 604800 },
+    }).catch(() => []),
     getMe().catch(() => null),
   ])
   return (
@@ -63,7 +66,8 @@ export default async function RootLayout({
         <Header
           categories={categories}
           countries={countries}
-          user={userData?.user || null}
+          user={auth?.data!.user || null}
+          favIds={auth?.data!.favIds || null}
         />
         <ThemeProvider>{children}</ThemeProvider>
         <Footer />

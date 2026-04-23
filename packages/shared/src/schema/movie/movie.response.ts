@@ -113,11 +113,22 @@ export interface ActorResponse {
   profile_path: string | null
   character: string | null
   role: string
+
+  // tmdb_people_id?: number
+  adult?: boolean
+  // gender?: 1 | 0 | 2
+  gender_name?: string
+  // name?: string
+  original_name?: string
+  // character?: string
+  known_for_department?: string
+  // profile_path?: string
+  also_known_as?: string[]
 }
 
 export interface MovieDetailResponse {
   movie: MovieResponseFull
-  actors: ActorResponse[]
+  // actors: ActorResponse[]
   servers: MovieServerResponse[]
   related: MovieResponse[]
 }

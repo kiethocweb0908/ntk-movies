@@ -4,12 +4,12 @@ const MediaGesture = () => {
   return (
     <>
       <Gesture
-        className="absolute inset-0 z-0 block h-full w-full pointer-coarse:hidden"
+        className="absolute inset-0 z-0 block h-full w-full lg:pointer-coarse:hidden"
         event="pointerup"
         action="toggle:paused"
       />
       <Gesture
-        className="absolute inset-0 z-0 block h-full w-full pointer-fine:hidden"
+        className="absolute inset-0 z-0 block h-full w-full lg:pointer-fine:hidden"
         event="pointerup"
         action="toggle:controls"
       />

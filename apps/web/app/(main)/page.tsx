@@ -3,6 +3,7 @@ import FeaturedSlider from "@/components/home/featured-slider/featured-slider"
 import HeroCarsousel from "@/components/home/hero-carousel/hero-carousel"
 import MoodSection from "@/components/home/mood-section/mood-section"
 import TopTist from "@/components/home/top-list/top-list"
+import { MovieCard } from "@/components/movie/movie-card"
 import MovieRow from "@/components/movie/movie-row"
 import { api } from "@/lib/api"
 import {
@@ -13,7 +14,6 @@ import {
 export default async function Page() {
   const res = await api<AppResponse<MovieHomeData>>("/movies/home", {
     next: { revalidate: 3600 },
-    // cache: "no-store",
   })
 
   const {
@@ -35,13 +35,30 @@ export default async function Page() {
       <div className="relative -top-20 z-10 space-y-2 px-4 lg:space-y-5 lg:px-5">
         <CategoryList categories={categories} />
         <MoodSection />
-        <MovieRow tittle="Phim Hàn Quốc mới" movies={korean} path="han-quoc" />
         <MovieRow
-          tittle="Phim Trung Quốc mới"
-          movies={chinese}
-          path="trung-quoc"
+          title="Phim Hàn Quốc mới"
+          items={korean}
+          path="han-quoc"
+          renderItem={(item, index) => (
+            <MovieCard movie={item} index={index} variantImg="horizontal" />
+          )}
         />
-        <MovieRow tittle="Phim US-UK mới" movies={usuk} path="au-my" />
+        <MovieRow
+          title="Phim Trung Quốc mới"
+          items={chinese}
+          path="trung-quoc"
+          renderItem={(item, index) => (
+            <MovieCard movie={item} index={index} variantImg="horizontal" />
+          )}
+        />
+        <MovieRow
+          title="Phim US-UK mới"
+          items={usuk}
+          path="au-my"
+          renderItem={(item, index) => (
+            <MovieCard movie={item} index={index} variantImg="horizontal" />
+          )}
+        />
 
         <FeaturedSlider movies={horror} tittle="Phim kinh dị mới" />
         <TopTist movies={topViewHorror} />

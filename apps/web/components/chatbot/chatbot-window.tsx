@@ -10,24 +10,14 @@ import {
   Messages,
 } from "@workspace/shared/schema/chatbot/chatbot.response"
 import { toast } from "sonner"
+import { useChatbotStore } from "@/store/use-chatbot-store"
 
 const ChatbotWindow = () => {
   const [value, setValue] = useState("")
-  const [messages, setMessages] = useState<Messages[]>([])
+  // const [messages, setMessages] = useState<Messages[]>([])
   const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    const saved = localStorage.getItem("ntk_phim_chatbot_messages")
-    if (saved) setMessages(JSON.parse(saved))
-  }, [])
-
-  useEffect(() => {
-    if (messages.length > 0)
-      localStorage.setItem(
-        "ntk_phim_chatbot_messages",
-        JSON.stringify(messages)
-      )
-  }, [messages])
+  const addMessage = useChatbotStore((s) => s.addMessage)
+  const messages = useChatbotStore((s) => s.messages)
 
   // gửi tin
   const handleSend = useCallback(async () => {
@@ -46,7 +36,8 @@ const ChatbotWindow = () => {
       parts: [{ text: msg.message }],
     }))
 
-    setMessages((prev) => [...prev, userMessage])
+    // setMessages((prev) => [...prev, userMessage])
+    addMessage(userMessage)
     setValue("")
     setIsLoading(true)
 
@@ -67,13 +58,14 @@ const ChatbotWindow = () => {
         movies: res.type === "movie" ? res.movies : undefined,
       }
 
-      setMessages((prev) => [...prev, botMessage])
+      // setMessages((prev) => [...prev, botMessage])
+      addMessage(botMessage)
     } catch (error: any) {
       toast.error(error?.message || "Có lỗi xảy ra")
     } finally {
       setIsLoading(false)
     }
-  }, [value, isLoading])
+  }, [value, isLoading, messages, addMessage])
 
   // phím enter
   const handleKeyPress = useCallback(

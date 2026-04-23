@@ -22,7 +22,7 @@ const TabActors = ({ actors, grid = 6 }: TabActorsProps) => {
     <div className={`grid grid-cols-2 gap-6 sm:grid-cols-3 ${gridClass}`}>
       {actors.map((actor) => (
         <div
-          key={actor.id}
+          key={actor.tmdb_people_id}
           className="group flex flex-col items-center gap-3 text-center"
         >
           {/* Avatar Container */}
@@ -30,7 +30,7 @@ const TabActors = ({ actors, grid = 6 }: TabActorsProps) => {
             {actor.profile_path ? (
               <Image
                 src={`${TMDB_IMAGE_BASE}${actor.profile_path}`}
-                alt={actor.name}
+                alt={actor.name || ""}
                 fill
                 sizes="(max-width: 768px) 50vw, 15vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-110"
@@ -49,7 +49,9 @@ const TabActors = ({ actors, grid = 6 }: TabActorsProps) => {
               {actor.name}
             </span>
             <span className="line-clamp-1 text-xs text-slate-400">
-              {actor.role === "Acting" ? actor.character : actor.role || "N/A"}
+              {actor.known_for_department === "Acting"
+                ? actor.character
+                : actor.known_for_department || "N/A"}
             </span>
           </div>
         </div>

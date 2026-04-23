@@ -8,6 +8,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { MailModule } from '../mail/mail.module';
 import { ConfigService } from '@nestjs/config';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { FavoriteModule } from '../favorite/favorite.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
       }),
     }),
     MailModule,
+    FavoriteModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, GoogleStrategy],
