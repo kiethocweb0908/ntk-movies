@@ -142,23 +142,24 @@ export class AuthService {
     res: Response,
     tokens: { accessToken: string; refreshToken?: string },
   ) {
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
+      path: '/',
+      domain: process.env.DOMAIN,
+    };
+
     if (tokens?.accessToken) {
       res.cookie('accessToken', tokens.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        path: '/',
-        // maxAge: 15 * 60 * 1000,
-        maxAge: 1 * 60 * 1000,
+        ...cookieOptions,
+        maxAge: 5 * 60 * 1000,
       });
     }
 
     if (tokens?.refreshToken) {
       res.cookie('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        path: '/',
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
     }
@@ -169,8 +170,9 @@ export class AuthService {
     const options: CookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
       path: '/',
+      domain: process.env.DOMAIN,
     };
 
     if (expiresIn) {
@@ -179,33 +181,18 @@ export class AuthService {
     res.cookie(name, value, options);
   }
 
-  // clear accessToken và refreshToken token
-  // clearCookies(res: Response) {
-  //   const cookieOptions = {
-  //     httpOnly: true,
-  //     secure: process.env.NODE_ENV === 'production',
-  //     sameSite:
-  //       process.env.NODE_ENV === 'production'
-  //         ? ('none' as const)
-  //         : ('lax' as const),
-  //     path: '/',
-  //     expires: new Date(0),
-  //   };
-
-  //   res.cookie('accessToken', '', cookieOptions);
-  //   res.cookie('refreshToken', '', cookieOptions);
-  // }
-
   //
   clearCookies(res: Response, ...names: string[]) {
     const options: CookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite:
-        process.env.NODE_ENV === 'production'
-          ? ('none' as const)
-          : ('lax' as const),
+      // sameSite:
+      //   process.env.NODE_ENV === 'production'
+      //     ? ('none' as const)
+      //     : ('lax' as const),
+      sameSite: 'lax' as const,
       path: '/',
+      domain: process.env.DOMAIN,
     };
 
     // Lặp qua danh sách tên và xóa từng cái

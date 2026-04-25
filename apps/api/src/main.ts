@@ -10,8 +10,10 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
 
+  const origins = process.env.FRONTEND_URLS?.split(',') || [];
+
   app.enableCors({
-    origin: env.FRONTEND_API, // Port của Next.js
+    origin: origins,
     methods: 'GET,POST,PUT,DELETE,PATCH',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',
