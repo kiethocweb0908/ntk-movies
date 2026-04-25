@@ -13,6 +13,7 @@ import { cookies } from "next/headers"
 import { ChatbotFloating } from "@/components/chatbot/chatbot-floating"
 import { GetMeResponse } from "@workspace/shared/schema/auth/auth.response"
 import { AppResponse } from "@workspace/shared/schema/movie/movie.response"
+import { Metadata } from "next"
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -23,6 +24,14 @@ const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
+
+export const metadata: Metadata = {
+  title: "NTK Phim - Phim hay chất lượng",
+  description: "Website xem phim chất lượng cao của NTK",
+  icons: {
+    icon: "/favicon.webp",
+  },
+}
 
 export default async function RootLayout({
   children,

@@ -43,7 +43,8 @@ const ActionButton = ({
   if (variant === "info") {
     return (
       <Link href={`${Movie_URL}/${path}`} className={className}>
-        <Info size={20} /> Thông tin
+        <Info size={20} />
+        <span className="hidden sm:block">Thông tin</span>
       </Link>
     )
   }
