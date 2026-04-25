@@ -19,7 +19,7 @@ export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
   @Get()
-  @UseGuards(AtGuard)
+  // @UseGuards(AtGuard)
   async getFavorites(
     @Req() req: RequestWithUser,
     @Query() query: FavoriteQueryDto,
@@ -35,7 +35,7 @@ export class FavoriteController {
   }
 
   @Post('/:movieId')
-  @UseGuards(AtGuard)
+  // @UseGuards(AtGuard)
   async updateFavorite(
     @Req() req: RequestWithUser,
     @Param() param: MovieFavoriteDto,

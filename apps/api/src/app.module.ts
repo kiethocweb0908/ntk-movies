@@ -33,10 +33,10 @@ import { FavoriteModule } from './favorite/favorite.module';
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_GUARD,
-      useClass: AppAuthGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AppAuthGuard,
+    // },
   ],
 })
 export class AppModule {}

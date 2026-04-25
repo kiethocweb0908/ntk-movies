@@ -19,7 +19,7 @@ export class HistoryController {
   constructor(private readonly historyService: HistoryService) {}
 
   @Post('update')
-  @UseGuards(AtGuard)
+  // @UseGuards(AtGuard)
   async update(@Req() req: RequestWithUser, @Body() data: UpdateHistoryDto) {
     await this.historyService.updateHistory(req.user.id, data);
     return {
@@ -28,7 +28,7 @@ export class HistoryController {
   }
 
   @Get()
-  @UseGuards(AtGuard)
+  // @UseGuards(AtGuard)
   async getHistory(
     @Req() req: RequestWithUser,
     @Query() query: HistoyryQueryDto,

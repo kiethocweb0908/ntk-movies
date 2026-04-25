@@ -1,6 +1,8 @@
-export interface RegisterResponse {
-  email: string
-  type: string
+import { FavoritesResponse } from "../favorite/favorite.response.js"
+
+export interface OTPResponse {
+  otpEmail: string
+  otpType: "REGISTER" | "FORGOT_PASSWORD"
 }
 
 export interface ResendOTPResponse {
@@ -11,12 +13,14 @@ export interface Verify_REGISTER {
   accessToken: string
   refreshToken: string
   user: UserResponse
+  favIds: string[]
 }
 
 export interface Verify_FORGOT_PASSWORD {
-  message: string
   resetPasswordToken: string
 }
+
+export interface ResetPasswordResponse {}
 
 export interface UserResponse {
   id: string
@@ -33,3 +37,10 @@ export interface GetMeResponse {
   user: UserResponse
   favIds: string[]
 }
+
+export interface TokenResponse {
+  accessToken: string
+  refreshToken: string
+}
+export interface LoginResponse extends GetMeResponse, TokenResponse {}
+export interface LoginResponseClient extends GetMeResponse {}

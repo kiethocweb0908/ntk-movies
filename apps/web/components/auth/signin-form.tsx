@@ -24,7 +24,10 @@ import { api } from "@/lib/api"
 import ButtonLoginGoogle from "./button-login-google"
 import { useAuthStore } from "@/store/use-auth-store"
 import { AppResponse } from "@workspace/shared/schema/movie/movie.response"
-import { GetMeResponse } from "@workspace/shared/schema/auth/auth.response"
+import {
+  GetMeResponse,
+  LoginResponseClient,
+} from "@workspace/shared/schema/auth/auth.response"
 import { useChatbotStore } from "@/store/use-chatbot-store"
 
 const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
@@ -52,9 +55,23 @@ const SigninForm = ({ className, ...props }: React.ComponentProps<"div">) => {
   const onSubmit = async (data: LoginType) => {
     if (isRedirecting) return
 
-    const SignInPromise = api<AppResponse<GetMeResponse>>("/auth/login", {
+    // const SignInPromise = api<AppResponse<GetMeResponse>>("/auth/login", {
+    //   method: "POST",
+    //   body: JSON.stringify(data),
+    // })
+
+    //ZZ
+    const SignInPromise = fetch("/api/auth/login", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
+    }).then(async (res) => {
+      const data: AppResponse<LoginResponseClient> = await res.json()
+      if (!res.ok) throw new Error(data.message || "Đăng nhập thất bại")
+
+      return data
     })
 
     toast.promise(SignInPromise, {

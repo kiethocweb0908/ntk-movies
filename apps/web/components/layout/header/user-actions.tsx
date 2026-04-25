@@ -47,8 +47,14 @@ const UserActions = ({
 
   const handleLogout = async () => {
     if (isAction) return
-    const logoutPromise = callApi<{ message: string }>("/auth/logout", {
+
+    //ZZ
+    const logoutPromise = fetch("/api/auth/logout", {
       method: "POST",
+    }).then(async (res) => {
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message)
+      return data
     })
 
     setIsAction(true)

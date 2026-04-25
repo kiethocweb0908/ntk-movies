@@ -9,17 +9,31 @@ export const handleApiError = (error: any) => {
   //   }
 
   if (error.status === 401) {
-    if (error.code === "SESSION_EXPIRED") {
+    if (
+      error.code === "SESSION_EXPIRED" ||
+      error.message === "SESSION_EXPIRED"
+    ) {
       return {
         shouldRedirect: true,
         message: "Phiên đăng nhập của bạn đã hết hạn!",
       }
-    } else if (error.code === "NOT_LOGGED_IN") {
+    } else if (
+      error.code === "NOT_LOGGED_IN" ||
+      error.message === "NOT_LOGGED_IN"
+    ) {
       return {
         shouldRedirect: false,
         message: "Bạn cần đăng nhập để sử dụng tính năng này!",
       }
     }
   }
+
+  if (error.status === 403) {
+    return {
+      shouldRedirect: false,
+      message: "Bạn không có quyền thực hiện hành động này!",
+    }
+  }
+
   return { shouldRedirect: false, message: error.message }
 }

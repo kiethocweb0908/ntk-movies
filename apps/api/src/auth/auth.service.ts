@@ -18,12 +18,14 @@ import {
 import crypto from 'crypto';
 import { MailService } from '../mail/mail.service';
 import {
-  RegisterResponse,
+  OTPResponse,
+  ResendOTPResponse,
   Verify_FORGOT_PASSWORD,
   Verify_REGISTER,
 } from '@workspace/shared/schema/auth/auth.response';
 import { CookieOptions, Request, Response } from 'express';
 import { AppResponse } from '@workspace/shared/schema/movie/movie.response';
+import { FavoriteService } from '../favorite/favorite.service';
 
 type PENDING_DATA_REGISTER = {
   email: string;
@@ -39,6 +41,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly favoriteService: FavoriteService,
   ) {}
 
   //Xác thực
@@ -149,7 +152,7 @@ export class AuthService {
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         path: '/',
         // maxAge: 15 * 60 * 1000,
-        maxAge: 1 * 60 * 1000,
+        maxAge: 5 * 60 * 1000,
       });
     }
 
@@ -238,7 +241,7 @@ export class AuthService {
   //============================================================
 
   // Đăng ký -> gửi otp
-  async register(data: RegisterType): Promise<AppResponse<RegisterResponse>> {
+  async register(data: RegisterType): Promise<AppResponse<OTPResponse>> {
     const { email, userName, password, firstName, lastName } = data;
 
     // check
@@ -293,7 +296,7 @@ export class AuthService {
 
     return {
       message: `Mã OTP đã được gửi đến email ${email}. Vui lòng xác thực trong 5 phút.`,
-      data: { email, type: 'REGISTER' },
+      data: { otpEmail: email, otpType: 'REGISTER' },
     };
   }
 
@@ -301,7 +304,7 @@ export class AuthService {
   async verifyOTP(
     data: VerifyOtpType,
     deviceInfo?: DeviceInfoType,
-  ): Promise<Verify_REGISTER | Verify_FORGOT_PASSWORD> {
+  ): Promise<AppResponse<Verify_REGISTER | Verify_FORGOT_PASSWORD>> {
     const { email, otp, type } = data;
 
     // kiểm tra tồn tại
@@ -345,25 +348,29 @@ export class AuthService {
         },
       });
 
-      await this.prisma.oTP.delete({ where: { id: otpRecord.id } });
-
-      const [{ accessToken }, refreshToken] = await Promise.all([
+      const [{ accessToken }, refreshToken, favIds] = await Promise.all([
         this.generateAccessToken(newUser.id),
         this.createSession(newUser.id, deviceInfo!),
+        this.favoriteService.getFavoriteMovieIds(newUser.id),
+        this.prisma.oTP.delete({ where: { id: otpRecord.id } }),
       ]);
 
       return {
-        accessToken,
-        refreshToken,
-        user: {
-          id: newUser.id,
-          lastName: newUser.lastName,
-          firstName: newUser.firstName,
-          email: newUser.email,
-          userName: newUser.userName,
-          avatarId: newUser.avatarId,
-          avatarUrl: newUser.avatarUrl,
-          role: 'user',
+        message: 'Đăng ký thành công!',
+        data: {
+          accessToken,
+          refreshToken,
+          user: {
+            id: newUser.id,
+            lastName: newUser.lastName,
+            firstName: newUser.firstName,
+            email: newUser.email,
+            userName: newUser.userName,
+            avatarId: newUser.avatarId,
+            avatarUrl: newUser.avatarUrl,
+            role: 'user',
+          },
+          favIds,
         },
       };
     }
@@ -387,14 +394,16 @@ export class AuthService {
 
       return {
         message: 'Xác thực thành công, vui lòng đặt lại mật khẩu',
-        resetPasswordToken,
+        data: {
+          resetPasswordToken,
+        },
       };
     }
     throw new BadRequestException('Yêu cầu không hợp lệ');
   }
 
   // Gửi lại OTP
-  async resendOtp(data: ResendOtpType) {
+  async resendOtp(data: ResendOtpType): Promise<ResendOTPResponse> {
     const { email, type } = data;
 
     const existingOtp = await this.prisma.oTP.findFirst({
@@ -469,7 +478,7 @@ export class AuthService {
   }
 
   // Quên mật khẩu
-  async forgotPassword(identifier: string) {
+  async forgotPassword(identifier: string): Promise<AppResponse<OTPResponse>> {
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [{ email: identifier }, { userName: identifier }],
@@ -521,12 +530,18 @@ export class AuthService {
 
     return {
       message: `Mã OTP đã được gửi đến email ${existingUser.email}. Vui lòng xác thực trong 5 phút.`,
-      email: existingUser.email,
+      data: {
+        otpEmail: existingUser.email,
+        otpType: 'FORGOT_PASSWORD',
+      },
     };
   }
 
   // Đổi mật khẩu
-  async resetPassword(data: ResetPasswordType, deviceInfo: DeviceInfoType) {
+  async resetPassword(
+    data: ResetPasswordType,
+    deviceInfo: DeviceInfoType,
+  ): Promise<AppResponse<Verify_REGISTER>> {
     const { email, password, resetToken } = data;
 
     const user = await this.prisma.user.findFirst({
@@ -557,19 +572,28 @@ export class AuthService {
       where: { userId: user.id },
     });
 
-    const [{ accessToken }, refreshToken] = await Promise.all([
+    const [{ accessToken }, refreshToken, favIds] = await Promise.all([
       this.generateAccessToken(user.id),
       this.createSession(user.id, deviceInfo!),
+      this.favoriteService.getFavoriteMovieIds(user.id),
     ]);
 
     return {
-      accessToken,
-      refreshToken,
-      user: {
-        lastName: user.lastName,
-        firstName: user.firstName,
-        email: user.email,
-        userName: user.userName,
+      message: 'Đổi mật khẩu thành công!',
+      data: {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          lastName: user.lastName,
+          firstName: user.firstName,
+          email: user.email,
+          userName: user.userName,
+          avatarId: user.avatarId,
+          avatarUrl: user.avatarUrl,
+          role: 'user',
+        },
+        favIds,
       },
     };
   }

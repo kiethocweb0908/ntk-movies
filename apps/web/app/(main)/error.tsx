@@ -1,6 +1,6 @@
 "use client"
 
-import { clearAuthCookies } from "@/lib/auth-actions"
+import { clearAuthCookies } from "@/lib/auth-cookies"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"

@@ -13,6 +13,13 @@ export interface AppResponse<T> {
   data?: T
 }
 
+export interface BEResponse<T> {
+  data?: T
+  status: number
+  message?: string | undefined
+  code?: string | undefined
+}
+
 export interface MovieResponse {
   id: string
   name: string

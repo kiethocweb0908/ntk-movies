@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FavoriteModule } from '../favorite/favorite.module';
 
+@Global()
 @Module({
   imports: [
     PassportModule,
@@ -27,6 +28,6 @@ import { FavoriteModule } from '../favorite/favorite.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, GoogleStrategy],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

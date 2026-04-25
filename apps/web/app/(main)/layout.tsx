@@ -13,6 +13,8 @@ import { cookies } from "next/headers"
 import { ChatbotFloating } from "@/components/chatbot/chatbot-floating"
 import { GetMeResponse } from "@workspace/shared/schema/auth/auth.response"
 import { AppResponse } from "@workspace/shared/schema/movie/movie.response"
+import { Metadata } from "next"
+import { apiBackend } from "@/lib/backend-client"
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -24,6 +26,14 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
+export const metadata: Metadata = {
+  title: "NTK Phim - Xem Phim Đỉnh Cao",
+  description: "Website xem phim trực tuyến chất lượng cao của NTK",
+  icons: {
+    icon: "/logo-tab.svg",
+  },
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -31,13 +41,24 @@ export default async function RootLayout({
 }>) {
   const getMe = async (): Promise<AppResponse<GetMeResponse> | null> => {
     const cookieStore = await cookies()
+    console.log("cookieStore: ", cookieStore)
     const hasToken =
       cookieStore.has("accessToken") || cookieStore.has("refreshToken")
 
-    if (hasToken)
-      return await api<AppResponse<GetMeResponse>>("/auth/me", {
+    console.log("hasToken: ", hasToken)
+
+    if (hasToken) {
+      const res = await apiBackend<GetMeResponse>("/auth/me", {
         cache: "no-store",
       })
+      console.log("res: ", res)
+      if (!res.data) return { message: res.message || "" }
+
+      return {
+        data: res.data,
+        message: res.message || "Thành công",
+      }
+    }
     return null
   }
 
@@ -51,6 +72,7 @@ export default async function RootLayout({
     }).catch(() => []),
     getMe().catch(() => null),
   ])
+  console.log("áuth: ", auth)
   return (
     <html
       lang="vi"
