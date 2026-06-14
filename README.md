@@ -1,6 +1,6 @@
-# NTK Phim – Online Movie Streaming Platform
+# NTK Movies – Online Movie Streaming Platform
 
-NTK Phim is a fullstack online movie streaming platform built with a modern, scalable architecture, focusing on performance, security, and user experience.
+NTK Movies is a fullstack online movie streaming platform built with a modern, scalable architecture, focusing on performance, security, and user experience.
 
 **Live Demo:** [https://www.ntkiet0908.id.vn/](https://www.ntkiet0908.id.vn/)
 
@@ -50,7 +50,7 @@ Fully responsive design across devices.
 
 Modern UI built with Next.js, Tailwind CSS, and Shadcn/UI
 
-### Watch Together Feature(In Progress)
+### Watch Together Feature
 
 Real-time synchronization of video playback (play, pause, seek).
 

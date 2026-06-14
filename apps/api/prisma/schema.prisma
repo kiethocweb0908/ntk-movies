@@ -56,6 +56,8 @@ model User {
   history      History[]
   likes        Like[]
   sessions     Session[]
+  watchRoom    WatchRoom[]
+  watchParticipant WatchParticipant[]
   role         Role       @relation(fields: [roleId], references: [id])
 
   @@index([email])
@@ -169,6 +171,7 @@ model Movie {
   categories     MovieCategory[]
   countries      MovieCountry[]
   galleries      MovieGallery[]
+  watchRooms    WatchRoom[]
 
   @@index([externalId])
   @@index([year])
@@ -244,6 +247,8 @@ model Episode {
   server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
    history        History[]
+   watchRoom      WatchRoom[]
+
   @@unique([serverId, slug])
   @@index([serverId, slug])
 }
@@ -300,6 +305,47 @@ model Like {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, commentId])
+}
+
+model WatchRoom {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roomCode    String   @unique 
+  name        String?
+  hostId      String   @db.Uuid
+
+  movieId   String   @db.Uuid
+  episodeId   String?   @db.Uuid
+  isPrivate   Boolean  @default(false)
+  password    String?  
+
+  isPlaying   Boolean  @default(false)
+  currentTime Float    @default(0)
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  host        User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  movie        Movie     @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  episode     Episode?  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  participants WatchParticipant[]
+
+  @@index([roomCode, isActive]) 
+}
+
+model WatchParticipant {
+
+  userId String @db.Uuid
+  roomId String @db.Uuid
+
+  joinedAt DateTime @default(now())
+
+  room WatchRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roomId])
+
 }
 
 enum OtpType {

@@ -20,7 +20,7 @@ const MovieList = <T,>({ items, grid = 8, renderItem }: MovieListProps<T>) => {
   const gridClass = gridConfigs[grid]
   return (
     <div
-      className={`grid grid-cols-2 gap-5 md:grid-cols-4 lg:grid-cols-6 ${gridClass}`}
+      className={`grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 ${gridClass}`}
     >
       {/* {movies.map((movie, index) => (
         <MovieCard key={movie.slug} movie={movie} index={index} />

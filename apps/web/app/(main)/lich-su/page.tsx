@@ -10,7 +10,7 @@ const HistoryPage = async () => {
 
   if (!accessToken && !refreshToken) redirect("/")
   return (
-    <main className="px-5 pt-28 text-white">
+    <main className="min-h-screen px-5 pt-28 text-white">
       <TitleSection title="Lịch sử phim đã xem của bạn" className="mb-3" />
       {/* component danh sách phim */}
       <HistoryListClient />

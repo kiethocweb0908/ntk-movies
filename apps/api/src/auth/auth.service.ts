@@ -19,6 +19,7 @@ import crypto from 'crypto';
 import { MailService } from '../mail/mail.service';
 import {
   RegisterResponse,
+  UserResponse,
   Verify_FORGOT_PASSWORD,
   Verify_REGISTER,
 } from '@workspace/shared/schema/auth/auth.response';
@@ -218,6 +219,12 @@ export class AuthService {
   // Tạo otp
   generateOTP() {
     return crypto.randomInt(100000, 1000000).toString();
+  }
+
+  async verifyAsync(accessToken: string) {
+    return await this.jwtService.verifyAsync(accessToken, {
+      secret: process.env.JWT_SECRET,
+    });
   }
 
   //============================================================
@@ -426,7 +433,7 @@ export class AuthService {
   }
 
   // Lấy thông tin
-  async getMe(userId: string) {
+  async getMe(userId: string): Promise<UserResponse> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -569,9 +576,7 @@ export class AuthService {
     if (accessToken || refreshToken) {
       if (accessToken) {
         try {
-          const payload = await this.jwtService.verifyAsync(accessToken, {
-            secret: process.env.JWT_SECRET,
-          });
+          const payload = await this.verifyAsync(accessToken);
 
           return {
             id: payload.sub,

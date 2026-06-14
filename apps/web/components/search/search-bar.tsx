@@ -17,11 +17,15 @@ import { cn } from "@workspace/ui/lib/utils"
 interface SearchBarProps {
   hidden?: boolean
   setIsOpenMobiel?: React.Dispatch<React.SetStateAction<boolean>>
+  onSelectMovie?: (movie: MovieResponse) => void
+  limit?: number
 }
 
 export default function SearchBar({
   hidden = true,
   setIsOpenMobiel,
+  onSelectMovie,
+  limit = 5,
 }: SearchBarProps) {
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<MovieResponse[]>([])
@@ -42,7 +46,7 @@ export default function SearchBar({
       setLoading(true)
       try {
         const res = await api<AppResponse<MoviesResponse>>(
-          `/movies?search=${debouncedQuery.trim()}&limit=5`
+          `/movies?search=${debouncedQuery.trim()}&limit=${limit}`
         )
         const movies = res.data!.movies
 
@@ -62,12 +66,14 @@ export default function SearchBar({
     (e: React.FormEvent) => {
       e.preventDefault()
       if (!query.trim()) return
-      setIsOpen(false)
       if (setIsOpenMobiel) {
         setIsOpenMobiel(false)
       }
-      router.push(`/tim-kiem?q=${encodeURIComponent(query)}`)
-      setQuery("")
+      if (!onSelectMovie) {
+        setIsOpen(false)
+        router.push(`/tim-kiem?q=${encodeURIComponent(query)}`)
+        setQuery("")
+      }
     },
     [query]
   )
@@ -82,7 +88,12 @@ export default function SearchBar({
   }, [hidden])
 
   return (
-    <div className="relative sm:w-full sm:max-w-sm md:max-w-md xl:max-w-sm">
+    <div
+      className={cn(
+        "relative",
+        !onSelectMovie && "sm:w-full sm:max-w-sm md:max-w-md xl:max-w-sm"
+      )}
+    >
       <form
         onSubmit={handleSearchSubmit}
         className={cn("relative z-20 w-full", hidden && "hidden sm:block")}
@@ -97,7 +108,7 @@ export default function SearchBar({
 
         <Input
           name="q"
-          type="search"
+          type={"search"} // a
           value={query}
           ref={inputRef}
           autoFocus
@@ -123,7 +134,12 @@ export default function SearchBar({
 
       {/* list phim */}
       {isOpen && query.trim() && (
-        <div className="absolute top-full right-1/2 z-50 mt-2 w-screen translate-x-1/2 -translate-y-1 rounded-xl border border-white/10 bg-slate-900 p-2 shadow-2xl sm:w-full">
+        <div
+          className={cn(
+            "absolute top-full left-0 z-50 mt-2 w-full rounded-xl border border-white/10 bg-slate-900 p-2 shadow-2xl sm:w-full",
+            onSelectMovie && "custom-scrollbar max-h-75 overflow-y-auto"
+          )}
+        >
           {/* đang gõ */}
           {loading || query !== debouncedQuery ? (
             <div className="flex justify-center py-10 text-primary">
@@ -139,6 +155,7 @@ export default function SearchBar({
                   setIsOpen={setIsOpen}
                   setQuery={setQuery}
                   handleSearchSubmit={handleSearchSubmit}
+                  onSelectMovie={onSelectMovie}
                 />
               ) : (
                 // Không tìm thấy phim

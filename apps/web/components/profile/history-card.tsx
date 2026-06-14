@@ -1,7 +1,6 @@
 import Link from "next/link"
-import { Play } from "lucide-react"
-import { HistoriesResponse } from "@workspace/shared/schema/history/history.response"
 import { IMG_URL } from "@workspace/ui/lib/config"
+import PlayHover from "../ui/play-hover"
 
 interface HistoryCardProps {
   data: any
@@ -26,11 +25,7 @@ const HistoryCard = ({ data }: HistoryCardProps) => {
         />
 
         {/* Lớp phủ khi hover */}
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500 text-black shadow-xl">
-            <Play className="ml-1 fill-current" size={24} />
-          </div>
-        </div>
+        <PlayHover />
 
         {/* Badge tập phim đang xem */}
         <div className="absolute top-2 left-2 flex flex-col gap-1 rounded-md bg-yellow-500 px-2 py-1 text-[10px] font-extrabold text-black uppercase shadow-md md:flex-row md:gap-2">

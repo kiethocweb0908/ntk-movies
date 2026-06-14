@@ -13,6 +13,7 @@ import { AppAuthGuard } from './common/guards/app-at.guard';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { HistoryModule } from './history/history.module';
 import { FavoriteModule } from './favorite/favorite.module';
+import { WatchTogetherModule } from './watch-together/watch-together.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FavoriteModule } from './favorite/favorite.module';
     ChatbotModule,
     HistoryModule,
     FavoriteModule,
+    WatchTogetherModule,
   ],
   controllers: [AppController],
   providers: [

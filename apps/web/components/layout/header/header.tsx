@@ -45,7 +45,7 @@ const Header = ({ categories, countries, user, favIds }: HeaderProps) => {
       className={cn(
         "fixed right-0 left-0 z-50 flex items-center justify-between gap-5 p-4 transition-all duration-300 ease-in-out lg:px-5",
         isScrolled
-          ? "h-18 bg-slate-900/90 shadow-lg backdrop-blur-md"
+          ? "h-18 bg-background/90 shadow-lg backdrop-blur-md"
           : "h-22 bg-transparent"
       )}
     >

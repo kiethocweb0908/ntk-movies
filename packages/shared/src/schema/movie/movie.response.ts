@@ -85,9 +85,9 @@ export interface MovieHomeData {
 }
 
 export interface EpisodeResponse {
+  id: string
   name: string
   slug: string
-  // linkEmbed?: string | null
 }
 
 export interface EpisodeVideoResponse {

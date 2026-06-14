@@ -145,7 +145,7 @@ export class MoviesService {
       include: {
         episodes: {
           where: { published: true },
-          select: { name: true, slug: true },
+          select: { id: true, name: true, slug: true },
           orderBy: { name: 'asc' },
         },
       },
@@ -654,6 +654,7 @@ export class MoviesService {
               take: 1,
               select: {
                 slug: true,
+                id: true,
               },
             },
           },
@@ -672,6 +673,7 @@ export class MoviesService {
     return {
       serverId: movie.servers[0].id,
       episodeSlug: movie.servers[0].episodes[0].slug,
+      episodeId: movie.servers[0].episodes[0].id,
     };
   }
 

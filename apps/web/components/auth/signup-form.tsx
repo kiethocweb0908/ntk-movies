@@ -63,12 +63,12 @@ export function SignupForm({
     toast.promise(registerPromise, {
       loading: "Đang xử lý...",
       success: (data) => {
-        setIsRedirecting(true)
         router.push("/xac-thuc-otp")
+        setIsRedirecting(true)
         return data.message || "Đăng ký thành công!"
       },
       error: (err: any) => {
-        setIsRedirecting(true)
+        setIsRedirecting(false)
         return err.message
       },
     })

@@ -9,6 +9,7 @@ interface SearchItemProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
   setQuery: React.Dispatch<React.SetStateAction<string>>
   setIsOpenMobiel?: React.Dispatch<React.SetStateAction<boolean>>
+  onSelectMovie?: (movie: MovieResponse) => void
 }
 
 const SearchItem = ({
@@ -16,20 +17,19 @@ const SearchItem = ({
   setIsOpen,
   setQuery,
   setIsOpenMobiel,
+  onSelectMovie,
 }: SearchItemProps) => {
   const router = useRouter()
 
+  const handleSelect = () => {
+    onSelectMovie ? onSelectMovie(movie) : router.push(`/phim/${movie.slug}`)
+    setIsOpen(false)
+    setQuery("")
+    if (setIsOpenMobiel) setIsOpenMobiel(false)
+  }
+
   return (
-    <div
-      onClick={() => {
-        router.push(`/phim/${movie.slug}`)
-        setIsOpen(false)
-        setQuery("")
-        if (setIsOpenMobiel) {
-          setIsOpenMobiel(false)
-        }
-      }}
-    >
+    <div onClick={handleSelect}>
       <MovieCard isHorizontal={true} movie={movie} />
     </div>
   )

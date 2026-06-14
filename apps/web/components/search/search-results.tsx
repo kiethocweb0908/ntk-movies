@@ -9,6 +9,7 @@ interface SearchResultsProps {
   setQuery: React.Dispatch<React.SetStateAction<string>>
   handleSearchSubmit: (e: React.FormEvent) => void
   setIsOpenMobiel?: React.Dispatch<React.SetStateAction<boolean>>
+  onSelectMovie?: (movie: MovieResponse) => void
 }
 
 const SearchResults = ({
@@ -17,6 +18,7 @@ const SearchResults = ({
   setQuery,
   handleSearchSubmit,
   setIsOpenMobiel,
+  onSelectMovie,
 }: SearchResultsProps) => {
   const router = useRouter()
   return (
@@ -28,14 +30,17 @@ const SearchResults = ({
           setIsOpen={setIsOpen}
           setQuery={setQuery}
           setIsOpenMobiel={setIsOpenMobiel}
+          onSelectMovie={onSelectMovie}
         />
       ))}
-      <div
-        onClick={handleSearchSubmit}
-        className="mt-1 flex w-full cursor-pointer items-center justify-center gap-1 border-t border-white/5 p-2 text-center text-xs text-primary hover:text-textHover"
-      >
-        Xem tất cả kết quả <ArrowRight size={18} />
-      </div>
+      {!onSelectMovie && (
+        <div
+          onClick={handleSearchSubmit}
+          className="mt-1 flex w-full cursor-pointer items-center justify-center gap-1 border-t border-white/5 p-2 text-center text-xs text-primary hover:text-textHover"
+        >
+          Xem tất cả kết quả <ArrowRight size={18} />
+        </div>
+      )}
     </>
   )
 }

@@ -1,4 +1,3 @@
-import { Children } from "react"
 
 interface WatchSectionProps {
   children: React.ReactNode
