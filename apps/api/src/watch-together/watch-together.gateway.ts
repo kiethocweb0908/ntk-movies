@@ -9,11 +9,12 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
-import { type CustomSocket } from '../types/auth.type';
+import { AuthenticatedUser, type CustomSocket } from '../types/auth.type';
 
 const origins = process.env.FRONTEND_URLS?.split(',') || [];
 @WebSocketGateway({
-  cors: { origin: origins },
+  cors: { origin: origins, methods: ['GET', 'POST'], credentials: true },
+  transports: ['websocket'],
   namespace: 'watch-together',
 })
 export class WatchTogetherGateway
@@ -26,21 +27,36 @@ export class WatchTogetherGateway
 
   async handleConnection(client: Socket) {
     try {
-      const cookieHeader = client.handshake.headers?.cookie;
-      if (!cookieHeader) throw new Error('Unauthorized');
+      // const cookieHeader = client.handshake.headers?.cookie;
+      // console.log('headers: ', client.handshake.headers);
+      // if (!cookieHeader) throw new Error('Unauthorized');
 
-      const cookies = require('cookie').parse(cookieHeader);
-      const token = cookies['accessToken'];
-      if (!token) throw new Error('Unauthorized');
+      // const cookies = require('cookie').parse(cookieHeader);
+      // const token = cookies['accessToken'] || client.handshake.auth?.token;
+      // console.log('token: ', token);
+      // console.log(
+      //   'client.handshake.auth?.token;: ',
+      //   client.handshake.auth?.token,
+      // );
+      // if (!token) throw new Error('Unauthorized');
 
-      const payload = await this.authService.verifyAsync(token);
-      const user = await this.authService.getMe(payload.sub);
+      // const payload = await this.authService.verifyAsync(token);
+      // console.log('payload: ', payload);
+      // const user = await this.authService.getMe(payload.sub);
 
-      client.data.user = user;
-      console.log(`⚡ User ${payload.sub} Đã kết nối Socket`);
+      const userData: AuthenticatedUser = client.handshake.auth?.user;
+
+      if (!userData || !userData.id) {
+        throw new Error(
+          'Không tìm thấy thông tin user hợp lệ từ client gửi lên',
+        );
+      }
+
+      client.data.user = userData;
+      console.log(`⚡ User ${userData.email} Đã kết nối Socket`);
       client.emit('authenticated');
-    } catch (e) {
-      console.log('❌ Không tìm thấy user, Kết nối thất bại');
+    } catch (e: any) {
+      console.log('❌ Không tìm thấy user, Kết nối thất bại: ', e?.message);
       client.disconnect();
     }
   }
@@ -82,7 +98,9 @@ export class WatchTogetherGateway
     client.to(data.roomCode).emit('user-joined', { user });
 
     // Fix #5: ask host to send current video state to the new member
-    client.to(data.roomCode).emit('request-video-state', { targetSocketId: client.id });
+    client
+      .to(data.roomCode)
+      .emit('request-video-state', { targetSocketId: client.id });
   }
 
   // 2. Lắng nghe lệnh điều khiển video từ Host và phát lại cho mọi người
@@ -110,7 +128,9 @@ export class WatchTogetherGateway
     this.server.to(data.roomCode).emit('on-message', {
       userId: user.id,
       userEmail: user.email,
-      userName: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.email,
+      userName: user.firstName
+        ? `${user.firstName} ${user.lastName || ''}`.trim()
+        : user.email,
       content: data.content,
       type: 'user',
     });
@@ -120,7 +140,8 @@ export class WatchTogetherGateway
   @SubscribeMessage('send-video-state')
   handleSendVideoState(
     @ConnectedSocket() client: CustomSocket,
-    @MessageBody() data: { targetSocketId: string; currentTime: number; isPlaying: boolean },
+    @MessageBody()
+    data: { targetSocketId: string; currentTime: number; isPlaying: boolean },
   ) {
     // Send directly to the new member's socket
     this.server.to(data.targetSocketId).emit('on-sync-video', {

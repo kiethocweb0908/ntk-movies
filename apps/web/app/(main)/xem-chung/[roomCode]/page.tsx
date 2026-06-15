@@ -271,7 +271,7 @@ export default function RoomPage() {
             type="submit"
             variant="filter"
             disabled={isSubmittingPassword || password.length !== 6}
-            className="w-full cursor-pointer py-3 text-base font-semibold"
+            className="w-full! cursor-pointer py-6! text-base font-semibold"
           >
             {isSubmittingPassword ? "Đang xử lý..." : "Xác nhận vào phòng"}
           </Button>

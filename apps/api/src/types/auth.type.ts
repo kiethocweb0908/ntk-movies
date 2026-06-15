@@ -6,7 +6,7 @@ export interface RequestWithUser extends Request {
   user: User & { role: { slug: string } }; // Ghi đè hoặc thêm thuộc tính user
 }
 
-interface AuthenticatedUser {
+export interface AuthenticatedUser {
   id: string;
   email: string;
   userName: string;

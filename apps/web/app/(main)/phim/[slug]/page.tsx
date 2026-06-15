@@ -7,6 +7,7 @@ import {
   AppResponse,
   MovieDetailResponse,
 } from "@workspace/shared/schema/movie/movie.response"
+import { notFound } from "next/navigation"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -24,12 +25,15 @@ async function MovieDetailsPage({ params }: PageProps) {
     }).catch(() => null),
   ])
   let actors = []
+
+  const { movie, related, servers } = res.data!
+
+  if (!movie) return notFound()
   if (resActors && resActors.ok) {
     const dataActors = await resActors.json().catch(() => null)
     actors = dataActors?.data?.peoples || []
   }
 
-  const { movie, related, servers } = res.data!
   return (
     <main className="">
       <DetailBackground poster={movie.posterUrl} />

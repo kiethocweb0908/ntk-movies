@@ -118,6 +118,7 @@ export class MoviesController {
   @Get('keep-server')
   @HttpCode(HttpStatus.OK)
   async keepServer() {
-    return;
+    await this.moviesService.keepServer();
+    return { status: 'alive', timestamp: new Date().toISOString() };
   }
 }

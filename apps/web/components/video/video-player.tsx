@@ -132,16 +132,16 @@ export default function VideoPlayer({
   }, [episodeId])
 
   // gọi api tránh server ngủ đông
-  useEffect(() => {
-    if (isLoggedIn) return
+  // useEffect(() => {
+  //   if (isLoggedIn) return
 
-    const keepServerAlive = () => {
-      api("/keep-server", { method: "GET" }).catch(() => {})
-    }
+  //   const keepServerAlive = () => {
+  //     api("/keep-server", { method: "GET" }).catch(() => {})
+  //   }
 
-    const heartbeatInterval = setInterval(keepServerAlive, 5 * 60 * 1000)
-    return () => clearInterval(heartbeatInterval)
-  }, [isLoggedIn])
+  //   const heartbeatInterval = setInterval(keepServerAlive, 5 * 60 * 1000)
+  //   return () => clearInterval(heartbeatInterval)
+  // }, [isLoggedIn])
 
   function onHlsInstance(hls: Hls) {
     hls.config.maxBufferLength = 5

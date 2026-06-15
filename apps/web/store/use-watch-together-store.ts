@@ -7,6 +7,7 @@ import {
   Room,
   roomMessage,
 } from "@workspace/shared/schema/room/room.response"
+import { useAuthStore } from "./use-auth-store"
 
 interface watchTogetherState {
   socket: Socket | null
@@ -50,9 +51,19 @@ export const useWatchTogetherStore = create<watchTogetherState>((set, get) => ({
   connect: () => {
     if (get().socket?.connected) return
 
-    const socket = io(`${process.env.NEXT_PUBLIC_SOCKET_URL}/watch-together`, {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SOCKET_URL || "https://api.ntkiet0908.id.vn"
+
+    const currentUser = useAuthStore.getState().user
+    const socket = io(`${baseUrl}/watch-together`, {
       withCredentials: true,
       transports: ["websocket"],
+      autoConnect: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1500,
+      auth: {
+        user: currentUser,
+      },
     })
 
     socket.on("connect", () => {})

@@ -42,7 +42,8 @@ export class ChatbotService {
         - Chuẩn hóa thể loại 
         - Chuẩn hóa quốc gia 
         - Xác định mood hoặc theme nếu có 
-        - Nếu người dùng hỏi top phim, trending phim, phim nổi bật, phim hay nhất thì đặt isTopQuery = true 
+        - Nếu người dùng hỏi top phim, trending phim, phim nổi bật, phim hay nhất thì đặt isTopQuery = true, phim chiếu rạp thì là isChieurap = true, trường này không điền vào keyword
+        
         Ví dụ: 
         "hành đọng mỹ" -> normalizedGenre: "hành động" 
         "ha canh noi anh" -> normalizedKeyword: "Hạ Cánh Nơi Anh" 
@@ -62,7 +63,8 @@ export class ChatbotService {
           "theme": string | null, 
           "year": number | null, 
           "type": "single" | "series" | "hoathinh" | null, 
-          "isTopQuery": boolean 
+          "isTopQuery": boolean ,
+          "isChieurap": boolean
           } `,
         config: { responseMimeType: 'application/json' },
       });
@@ -180,6 +182,10 @@ export class ChatbotService {
           categories: { some: { category: { name: { in: mappedGenres } } } },
         });
       }
+    }
+
+    if (intent.isChieurap) {
+      where.chieurap = true;
     }
 
     if (andConditions.length > 0) {

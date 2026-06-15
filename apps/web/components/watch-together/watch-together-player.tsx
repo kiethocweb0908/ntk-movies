@@ -169,7 +169,7 @@ export default function WatchTogetherPlayer({
       {/* TẤM CHẮN KHÓA HOÀN TOÀN TƯƠNG TÁC CHO GUEST */}
       {!isHost && (
         <div
-          className="absolute inset-0 z-[60] cursor-not-allowed"
+          className="absolute inset-0 z-60 max-h-[85%] cursor-not-allowed select-none"
           title="Chỉ chủ phòng mới có thể điều khiển video"
         />
       )}

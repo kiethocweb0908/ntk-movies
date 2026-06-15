@@ -700,4 +700,9 @@ export class MoviesService {
       throw new NotFoundException(`Không tìm thấy phim với slug: ${movieSlug}`);
     }
   }
+
+  async keepServer() {
+    const a = await this.prisma.category.findFirst();
+    return;
+  }
 }

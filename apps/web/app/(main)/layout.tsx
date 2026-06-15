@@ -78,7 +78,9 @@ export default async function RootLayout({
           user={auth?.data!.user || null}
           favIds={auth?.data!.favIds || null}
         />
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <main className="min-h-screen">{children}</main>
+        </ThemeProvider>
         <Footer />
         <ChatbotFloating />
         <Toaster

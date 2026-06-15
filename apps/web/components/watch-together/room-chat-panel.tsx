@@ -164,18 +164,21 @@ export default function RoomChatPanel({
 
       <div className="flex flex-col gap-2 border-t border-white/5 bg-slate-900/85 p-3">
         {activeTab === "chat" && (
-          <form onSubmit={handleSendMessage} className="flex gap-2">
+          <form
+            onSubmit={handleSendMessage}
+            className="flex justify-between gap-2"
+          >
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Nhập tin nhắn..."
-              className="flex-1 border-white/10 bg-slate-800 text-white focus:border-yellow-400 focus:ring-yellow-400"
+              className="basis-4/5 border-white/10 bg-slate-800 text-white focus:border-yellow-400 focus:ring-yellow-400"
             />
             <Button
               type="submit"
               variant="filter"
               size="icon"
-              className="h-9 w-9 cursor-pointer rounded-lg"
+              className="h-9 w-9 basis-1/5 cursor-pointer rounded-lg"
             >
               <Send size={16} />
             </Button>

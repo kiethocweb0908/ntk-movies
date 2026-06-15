@@ -34,6 +34,7 @@ export const IntentSchema = z.object({
   type: z.enum(["single", "series", "hoathinh"]).nullable().optional(),
 
   isTopQuery: z.boolean().optional(),
+  isChieurap: z.boolean().optional(),
 })
 
 export type IntentType = z.infer<typeof IntentSchema>
