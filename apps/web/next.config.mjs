@@ -1,8 +1,12 @@
 /** @type {import('next').NextConfig} */
+
+const isImageUnoptimized =
+  process.env.NEXT_PUBLIC_DISABLE_IMAGE_OPTIMIZATION === "true"
+
 const nextConfig = {
   transpilePackages: ["@workspace/ui"],
   images: {
-    // unoptimized: true,
+    unoptimized: isImageUnoptimized,
     remotePatterns: [
       {
         protocol: "https",
